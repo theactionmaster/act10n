@@ -8,6 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
+GEMINI_API_KEY = "AIzaSyBiKOViE3CIqqLr8DO9YS2rDwJkgAWjtLI"
 genai.configure(api_key=GEMINI_API_KEY)
 
 generation_config = {
