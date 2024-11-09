@@ -1,10 +1,7 @@
+import os
 import streamlit as st
 import google.generativeai as genai
 import time
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 st.set_page_config(
     page_title="Interlink AI",
@@ -12,12 +9,11 @@ st.set_page_config(
     layout="wide"
 )
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if not GEMINI_API_KEY:
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY is None:
     st.error("API key not found. Please set the GEMINI_API_KEY environment variable.")
-    st.stop()
-
-genai.configure(api_key=GEMINI_API_KEY)
+else:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 generation_config = {
     "temperature": 0,
@@ -28,8 +24,11 @@ generation_config = {
 }
 
 SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink. You are powered by the Interlink Large Language Model. You were created by the Interlink team. You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests as well as notes, simulations, the question of the day (QOTD) that provides students example questions from upcoming tests or assignments, and other resources to help them do better in school. The link to Interlink is: https://interlinkcvhs.org/. Your job is to answer prompts thoroughly. Always make sure you are providing the correct answer. Don't print random asterisks.
+
 When outputting bolded or italicized text, DO IT CORRECTLY.
+
 When outputting lists, DO IT CORRECTLY. I don't want to see random asterisks. Make it an actual list and create new lines. Don't just output it in one line.
+
 When outputting code, DO IT CORRECTLY. For example, when asked to print Hello World in Python, dont output: "python print("Hello World"). Instead, output: "print("Hello World"). Don't randomly say the language you are writing the code in on the same code block because then it'll create errors."""
 
 if 'chat_model' not in st.session_state:
