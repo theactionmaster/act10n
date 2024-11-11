@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import time
+import re
 
 st.set_page_config(
     page_title="Interlink AI",
@@ -19,13 +20,44 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
-SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink. You are powered by the Interlink Large Language Model. You were created by the Interlink team. You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests as well as notes, simulations, the question of the day (QOTD) that provides students example questions from upcoming tests or assignments, and other resources to help them do better in school. The link to Interlink is: https://interlinkcvhs.org/. Your job is to answer prompts thoroughly. Always make sure you are providing the correct answer. Don't print random asterisks.
+def process_response(text):
+    lines = text.split('\n')
+    processed_lines = []
+    
+    for line in lines:
+        if re.match(r'^\d+\.', line.strip()):
+            processed_lines.append('\n' + line.strip())
+        elif line.strip().startswith('*') or line.strip().startswith('-'):
+            processed_lines.append('\n' + line.strip())
+        else:
+            processed_lines.append(line)
+    
+    text = '\n'.join(processed_lines)
+    
+    text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)
+    
+    text = re.sub(r'(\n[*-] .+?)(\n[^*\n-])', r'\1\n\2', text)
+    
+    return text.strip()
 
-When outputting bolded or italicized text, DO IT CORRECTLY.
+SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink. You are powered by the Interlink Large Language Model. You were created by the Interlink team. You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests as well as notes, simulations, the question of the day (QOTD) that provides students example questions from upcoming tests or assignments, and other resources to help them do better in school. The link to Interlink is: https://interlinkcvhs.org/.
 
-When outputting lists, DO IT CORRECTLY. I don't want to see random asterisks. Make it an actual list and create new lines. Don't just output it in one line.
+When formatting responses:
+1. Start each list item on a new line
+2. Use asterisks (*) or hyphens (-) for bullet points
+3. For numbered lists, use numbers followed by a period (1., 2., etc.)
+4. Leave a blank line before and after lists
+5. For code examples, use proper indentation
 
-When outputting code, DO IT CORRECTLY. For example, when asked to print Hello World in Python, dont output: "python print("Hello World"). Instead, output: "print("Hello World"). Don't randomly say the language you are writing the code in on the same code block because then it'll create errors."""
+Example format for lists:
+
+1. First item
+2. Second item
+3. Third item
+
+* Bullet point one
+* Bullet point two
+* Bullet point three"""
 
 if 'chat_model' not in st.session_state:
     st.session_state.chat_model = genai.GenerativeModel(
@@ -38,8 +70,17 @@ if 'chat_session' not in st.session_state:
     st.session_state.chat_session = st.session_state.chat_model.start_chat(history=[])
 
 if 'messages' not in st.session_state:
+    initial_message = """Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. I'm here to help you with:
+
+* Assignments and tests
+* Study resources and notes
+* Daily practice questions (QOTD)
+* Academic planning
+
+How can I assist you today?"""
+    
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. I'm here to help you stay on top of your assignments, tests, and provide you with valuable resources. How can I assist you today?"}
+        {"role": "assistant", "content": initial_message}
     ]
 
 st.title("💬 Interlink AI")
@@ -59,9 +100,18 @@ if prompt := st.chat_input("What can I help you with?"):
         try:
             response = st.session_state.chat_session.send_message(prompt)
             
-            chunks = response.text.split()
+            formatted_response = process_response(response.text)
+
+            chunks = []
+            for line in formatted_response.split('\n'):
+                chunks.extend(line.split(' '))
+                chunks.append('\n')
+
             for chunk in chunks:
-                full_response += chunk + " "
+                if chunk != '\n':
+                    full_response += chunk + ' '
+                else:
+                    full_response += chunk
                 time.sleep(0.05)
                 message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
             
