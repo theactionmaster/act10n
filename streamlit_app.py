@@ -40,24 +40,7 @@ def process_response(text):
     
     return text.strip()
 
-SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink. You are powered by the Interlink Large Language Model. You were created by the Interlink team. You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests as well as notes, simulations, the question of the day (QOTD) that provides students example questions from upcoming tests or assignments, and other resources to help them do better in school. The link to Interlink is: https://interlinkcvhs.org/.
-
-When formatting responses:
-1. Start each list item on a new line
-2. Use asterisks (*) or hyphens (-) for bullet points
-3. For numbered lists, use numbers followed by a period (1., 2., etc.)
-4. Leave a blank line before and after lists
-5. For code examples, use proper indentation
-
-Example format for lists:
-
-1. First item
-2. Second item
-3. Third item
-
-* Bullet point one
-* Bullet point two
-* Bullet point three"""
+SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink. You are powered by the Interlink Large Language Model. You were created by the Interlink team. You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests as well as notes, simulations, the question of the day (QOTD) that provides students example questions from upcoming tests or assignments, and other resources to help them do better in school. The link to Interlink is: https://interlinkcvhs.org/."""
 
 if 'chat_model' not in st.session_state:
     st.session_state.chat_model = genai.GenerativeModel(
@@ -70,14 +53,7 @@ if 'chat_session' not in st.session_state:
     st.session_state.chat_session = st.session_state.chat_model.start_chat(history=[])
 
 if 'messages' not in st.session_state:
-    initial_message = """Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. I'm here to help you with:
-
-* Assignments and tests
-* Study resources and notes
-* Daily practice questions (QOTD)
-* Academic planning
-
-How can I assist you today?"""
+    initial_message = """Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. How can I assist you today?"""
     
     st.session_state.messages = [
         {"role": "assistant", "content": initial_message}
