@@ -2,15 +2,19 @@ import streamlit as st
 import google.generativeai as genai
 import time
 import re
+import os
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("Missing GEMINI_API_KEY environment variable")
+
+genai.configure(api_key=GEMINI_API_KEY)
 
 st.set_page_config(
     page_title="Interlink AI",
     page_icon="🤖",
     layout="wide"
 )
-
-GEMINI_API_KEY = "AIzaSyBiKOViE3CIqqLr8DO9YS2rDwJkgAWjtLI"
-genai.configure(api_key=GEMINI_API_KEY)
 
 generation_config = {
     "temperature": 0,
