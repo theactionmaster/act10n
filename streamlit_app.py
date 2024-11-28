@@ -12,7 +12,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 st.set_page_config(
     page_title="Interlink AI",
-    page_icon="🤖",
+    page_icon="./favicon.ico",
     layout="wide"
 )
 
