@@ -78,6 +78,19 @@ st.markdown("""
         max-height: 200px;
         object-fit: contain;
     }
+    /* Ensure the sidebar toggle button is always visible */
+    .e14lo1l1.st-emotion-cache-qsoh6x.ex0cdmw0 {
+        opacity: 1 !important; /* Ensure the button is always visible */
+        visibility: visible !important; /* Make sure the button is visible */
+        pointer-events: all !important; /* Allow interaction with the button */
+        transition: none !important; /* Disable transition to prevent fading */
+    }
+
+    /* Optional: Add styles for the button when hovered */
+    .e14lo1l1.st-emotion-cache-qsoh6x.ex0cdmw0:hover {
+        background-color: #4a83d4; /* Change background color on hover */
+        color: white; /* Change text color on hover */
+    }
 </style>
 <center>
     <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
@@ -280,9 +293,9 @@ def main():
                     else:
                         full_response += chunk
                     time.sleep(0.05)
-                    message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
+                    message_placeholder.markdown("**InterlinkAI:** " + full_response + "▌", unsafe_allow_html=True)
                 
-                message_placeholder.markdown(full_response, unsafe_allow_html=True)
+                message_placeholder.markdown("**InterlinkAI:** " + full_response, unsafe_allow_html=True)
                 
                 st.session_state.messages.append({
                     "role": "assistant", 
