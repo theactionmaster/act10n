@@ -19,6 +19,8 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+    
     .stChatInputContainer {
         display: flex;
         align-items: center;
@@ -57,6 +59,7 @@ st.markdown("""
         font-size: 18px;
         color: #5799f7;
         text-align: center;
+        font-family: 'Orbitron', sans-serif;
     }
     .back-button:hover {
         background-color: #1c275c;
