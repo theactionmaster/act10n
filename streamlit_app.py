@@ -83,7 +83,7 @@ st.markdown("""
     }
 </style>
 <center>
-    <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
+    <a href="https://interlinkcvhs.org/" class="back-button" rel="noopener noreferrer">
         interlinkcvhs.org
     </a>
 </center>""", unsafe_allow_html=True)
