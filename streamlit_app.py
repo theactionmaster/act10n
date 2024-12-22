@@ -12,15 +12,19 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 
 st.set_page_config(
-    page_title="𝙸𝚗𝚝𝚎𝚛𝚕𝚒𝚗𝚔 𝙰𝙸",
+    page_title="Interlink AI",
     page_icon="./favicon.ico",
     layout="wide"
 )
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+    * {
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
     .stChatInputContainer {
         display: flex;
         align-items: center;
@@ -36,7 +40,7 @@ st.markdown("""
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-family: 'Orbitron', sans-serif;
+        font-family: 'Montserrat', sans-serif !important;
         text-transform: uppercase;
         letter-spacing: 2px;
         box-shadow: 0 0 15px rgba(74, 131, 212, 0.3);
@@ -59,7 +63,7 @@ st.markdown("""
         font-size: 18px;
         color: #5799f7;
         text-align: center;
-        font-family: 'Orbitron', sans-serif;
+        font-family: 'Montserrat', sans-serif !important;
     }
     .back-button:hover {
         background-color: #1c275c;
@@ -81,9 +85,26 @@ st.markdown("""
         max-height: 200px;
         object-fit: contain;
     }
+
+    /* Additional Streamlit-specific selectors for Montserrat */
+    .stMarkdown, .stText, .stTitle, .stHeader {
+        font-family: 'Montserrat', sans-serif !important;
+    }
+    
+    .stButton button {
+        font-family: 'Montserrat', sans-serif !important;
+    }
+    
+    .stTextInput input {
+        font-family: 'Montserrat', sans-serif !important;
+    }
+    
+    .stSelectbox select {
+        font-family: 'Montserrat', sans-serif !important;
+    }
 </style>
 <center>
-    <a href="https://interlinkcvhs.org/" class="back-button" rel="noopener noreferrer">
+    <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
         interlinkcvhs.org
     </a>
 </center>""", unsafe_allow_html=True)
@@ -97,7 +118,6 @@ generation_config = {
 }
 
 def process_response(text):
-    """Process the response text to improve formatting."""
     lines = text.split('\n')
     processed_lines = []
     
@@ -117,7 +137,6 @@ def process_response(text):
     return text.strip()
 
 def detect_file_type(uploaded_file):
-    """Enhanced file type detection with comprehensive MIME type mapping."""
     filename = uploaded_file.name
     file_ext = os.path.splitext(filename)[1].lower()
     
@@ -168,7 +187,6 @@ You are on a website called Interlink that provides Carnegie Vanguard High Schoo
 The link to Interlink is: https://interlinkcvhs.org/."""
 
 def initialize_session_state():
-    """Initialize Streamlit session state variables."""
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
@@ -190,7 +208,6 @@ def initialize_session_state():
         st.session_state.uploaded_files = []
 
 def main():
-    """Main Streamlit application logic."""
     initialize_session_state()
 
     st.title("💬 Interlink AI")
@@ -283,9 +300,9 @@ def main():
                     else:
                         full_response += chunk
                     time.sleep(0.05)
-                    message_placeholder.markdown("**InterlinkAI:** " + full_response + "▌", unsafe_allow_html=True)
+                    message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
                 
-                message_placeholder.markdown("**InterlinkAI:** " + full_response, unsafe_allow_html=True)
+                message_placeholder.markdown(full_response, unsafe_allow_html=True)
                 
                 st.session_state.messages.append({
                     "role": "assistant", 
