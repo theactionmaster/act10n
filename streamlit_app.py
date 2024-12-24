@@ -295,6 +295,15 @@ def main():
     initialize_session_state()
 
     st.title("💬 Interlink AI")
+    
+    INTERLINK_LOGO = "interlink_logo.png"
+
+    st.logo(
+        INTERLINK_LOGO,
+        size="large",
+        link="https://interlinkcvhs.org/",
+        icon_image=INTERLINK_LOGO,
+    )
 
     st.sidebar.subheader("File Upload")
     uploaded_files = st.sidebar.file_uploader(
