@@ -4,6 +4,9 @@ import time
 import re
 import os
 import mimetypes
+import tempfile
+import speech_recognition as sr
+import hashlib
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
@@ -86,7 +89,6 @@ st.markdown("""
         object-fit: contain;
     }
 
-    /* Additional Streamlit-specific selectors for Montserrat */
     .stMarkdown, .stText, .stTitle, .stHeader {
         font-family: 'Montserrat', sans-serif !important;
     }
@@ -117,6 +119,12 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
+SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink.
+You are powered by the Interlink Large Language Model.
+You were created by the Interlink team.
+You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests using a customized scheduling tool as well as notes, educational simulations, Quizlets, the Question of the Day (QOTD) and the Question Bank (QBank) that both provide students example questions from upcoming tests or assignments, and other resources to help them do better in school.
+The link to Interlink is: https://interlinkcvhs.org/."""
+
 def process_response(text):
     lines = text.split('\n')
     processed_lines = []
@@ -130,7 +138,6 @@ def process_response(text):
             processed_lines.append(line)
     
     text = '\n'.join(processed_lines)
-    
     text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)
     text = re.sub(r'(\n[*-] .+?)(\n[^*\n-])', r'\1\n\2', text)
     
@@ -180,12 +187,6 @@ def detect_file_type(uploaded_file):
     mime_type, _ = mimetypes.guess_type(filename)
     return mime_type or 'application/octet-stream'
 
-SYSTEM_INSTRUCTION = """Your name is Interlink AI, an AI chatbot on Interlink.
-You are powered by the Interlink Large Language Model.
-You were created by the Interlink team.
-You are on a website called Interlink that provides Carnegie Vanguard High School (CVHS) freshmen resources to stay on top of their assignments and tests using a customized scheduling tool as well as notes, educational simulations, Quizlets, the Question of the Day (QOTD) and the Question Bank (QBank) that both provide students example questions from upcoming tests or assignments, and other resources to help them do better in school.
-The link to Interlink is: https://interlinkcvhs.org/."""
-
 def initialize_session_state():
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
@@ -199,38 +200,94 @@ def initialize_session_state():
 
     if 'messages' not in st.session_state:
         initial_message = """Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. How can I assist you today?"""
-        
         st.session_state.messages = [
             {"role": "assistant", "content": initial_message}
         ]
     
     if 'uploaded_files' not in st.session_state:
         st.session_state.uploaded_files = []
+        
+    if 'processed_audio_hashes' not in st.session_state:
+        st.session_state.processed_audio_hashes = set()
+        
+    if 'camera_image' not in st.session_state:
+        st.session_state.camera_image = None
+        
+    if 'camera_enabled' not in st.session_state:
+        st.session_state.camera_enabled = False
+
+def get_audio_hash(audio_data):
+    return hashlib.md5(audio_data.getvalue()).hexdigest()
+
+def convert_audio_to_text(audio_file):
+    recognizer = sr.Recognizer()
+    
+    try:
+        with sr.AudioFile(audio_file) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+            return text
+    except sr.UnknownValueError:
+        raise Exception("Speech recognition could not understand the audio")
+    except sr.RequestError as e:
+        raise Exception(f"Could not request results from speech recognition service; {str(e)}")
+
+def save_audio_file(audio_data):
+    audio_bytes = audio_data.getvalue()
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmpfile:
+        tmpfile.write(audio_bytes)
+        return tmpfile.name
+
+def handle_chat_response(response, message_placeholder):
+    full_response = ""
+    formatted_response = process_response(response.text)
+    
+    chunks = []
+    for line in formatted_response.split('\n'):
+        chunks.extend(line.split(' '))
+        chunks.append('\n')
+    
+    for chunk in chunks:
+        if chunk != '\n':
+            full_response += chunk + ' '
+        else:
+            full_response += chunk
+        time.sleep(0.02)
+        message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
+    
+    message_placeholder.markdown(full_response, unsafe_allow_html=True)
+    
+    return full_response
+
+def show_file_preview(uploaded_file):
+    mime_type = detect_file_type(uploaded_file)
+    
+    if mime_type.startswith('image/'):
+        st.sidebar.image(uploaded_file, use_container_width=True)
+    elif mime_type.startswith('video/'):
+        st.sidebar.video(uploaded_file)
+    elif mime_type.startswith('audio/'):
+        st.sidebar.audio(uploaded_file)
+    else:
+        st.sidebar.info(f"Uploaded: {uploaded_file.name} (Type: {mime_type})")
 
 def main():
     initialize_session_state()
 
     st.title("💬 Interlink AI")
 
+    st.sidebar.subheader("File Upload")
     uploaded_files = st.sidebar.file_uploader(
         "Upload images, videos, audio, or documents", 
         type=[
-            # Images
             'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
-            # Videos
             'mp4', 'avi', 'mov', 'mkv', 'webm',
-            # Audio
             'mp3', 'wav', 'ogg', 'm4a',
-            # Documents
             'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
         ],
-        help="Upload multiple files for analysis and discussion (Max 20 MB per file)",
         accept_multiple_files=True
     )
-
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"], unsafe_allow_html=True)
 
     if uploaded_files:
         oversized_files = []
@@ -246,22 +303,83 @@ def main():
             st.sidebar.warning(f"The following files exceed 20 MB and were not uploaded: {', '.join(oversized_files)}")
         
         uploaded_files = valid_files
-
         st.session_state.uploaded_files = uploaded_files
         
-        for uploaded_file in uploaded_files:
-            mime_type = detect_file_type(uploaded_file)
+        if valid_files:
+            st.sidebar.markdown("### File Previews")
+            for uploaded_file in valid_files:
+                mime_type = detect_file_type(uploaded_file)
+                
+                if mime_type.startswith('image/'):
+                    st.sidebar.image(uploaded_file, use_container_width=True)
+                elif mime_type.startswith('video/'):
+                    st.sidebar.video(uploaded_file)
+                elif mime_type.startswith('audio/'):
+                    st.sidebar.audio(uploaded_file)
+                else:
+                    st.sidebar.info(f"Uploaded: {uploaded_file.name} (Type: {mime_type})")
             
-            if mime_type.startswith('image/'):
-                st.sidebar.image(uploaded_file, use_container_width=True)
-            elif mime_type.startswith('video/'):
-                st.sidebar.video(uploaded_file)
-            elif mime_type.startswith('audio/'):
-                st.sidebar.audio(uploaded_file)
-            else:
-                st.sidebar.info(f"Uploaded: {uploaded_file.name} (Type: {mime_type})")
+            st.sidebar.success(f"{len(valid_files)} file(s) uploaded! You can now ask about the files.")
+
+    st.sidebar.subheader("Camera Input")
+    camera_enabled = st.sidebar.checkbox("Enable camera", value=st.session_state.camera_enabled)
+    
+    if camera_enabled != st.session_state.camera_enabled:
+        st.session_state.camera_enabled = camera_enabled
+        st.session_state.camera_image = None
         
-        st.sidebar.success(f"{len(uploaded_files)} file(s) uploaded! You can now ask about the files.")
+    if st.session_state.camera_enabled:
+        camera_image = st.sidebar.camera_input("Take a picture")
+        if camera_image is not None:
+            st.session_state.camera_image = camera_image
+            st.sidebar.image(camera_image, caption="Captured Image")
+            st.sidebar.success("Image captured! You can now ask about the image.")
+    elif st.session_state.camera_image is not None:
+        st.session_state.camera_image = None
+
+    st.sidebar.subheader("Voice Input")
+    audio_input = st.sidebar.audio_input("Record your question")
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"], unsafe_allow_html=True)
+
+    if audio_input is not None:
+        audio_hash = get_audio_hash(audio_input)
+        
+        if audio_hash not in st.session_state.processed_audio_hashes:
+            try:
+                audio_file = save_audio_file(audio_input)
+                st.sidebar.audio(audio_input, format='audio/wav')
+                
+                try:
+                    st.sidebar.info("Converting speech to text...")
+                    transcribed_text = convert_audio_to_text(audio_file)
+                    
+                    st.sidebar.success("Speech converted to text!")
+                    st.sidebar.text(f"Transcribed text: {transcribed_text}")
+                    
+                    st.chat_message("user").markdown(transcribed_text)
+                    st.session_state.messages.append({"role": "user", "content": transcribed_text})
+                    
+                    with st.chat_message("assistant"):
+                        message_placeholder = st.empty()
+                        response = st.session_state.chat_session.send_message(transcribed_text)
+                        full_response = handle_chat_response(response, message_placeholder)
+                        
+                        st.session_state.messages.append({
+                            "role": "assistant", 
+                            "content": full_response
+                        })
+                    
+                    st.session_state.processed_audio_hashes.add(audio_hash)
+                    
+                finally:
+                    os.unlink(audio_file)
+                    
+            except Exception as e:
+                st.error(f"An error occurred while processing the audio: {str(e)}")
+                st.warning("Please try again or type your question instead.")
 
     prompt = st.chat_input("What can I help you with?")
 
@@ -275,6 +393,12 @@ def main():
                     'data': file.getvalue()
                 })
         
+        if st.session_state.camera_image:
+            input_parts.append({
+                'mime_type': 'image/jpeg',
+                'data': st.session_state.camera_image.getvalue()
+            })
+
         input_parts.append(prompt)
 
         st.chat_message("user").markdown(prompt)
@@ -282,27 +406,10 @@ def main():
         
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
-            full_response = ""
             
             try:
                 response = st.session_state.chat_session.send_message(input_parts)
-                
-                formatted_response = process_response(response.text)
-
-                chunks = []
-                for line in formatted_response.split('\n'):
-                    chunks.extend(line.split(' '))
-                    chunks.append('\n')
-
-                for chunk in chunks:
-                    if chunk != '\n':
-                        full_response += chunk + ' '
-                    else:
-                        full_response += chunk
-                    time.sleep(0.05)
-                    message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
-                
-                message_placeholder.markdown(full_response, unsafe_allow_html=True)
+                full_response = handle_chat_response(response, message_placeholder)
                 
                 st.session_state.messages.append({
                     "role": "assistant", 
@@ -315,6 +422,9 @@ def main():
                     st.warning("The API rate limit has been reached. Please wait a moment before trying again.")
                 else:
                     st.warning("Please try again in a moment.")
+
+        if st.session_state.camera_image and not st.session_state.camera_enabled:
+            st.session_state.camera_image = None
 
 if __name__ == "__main__":
     main()
