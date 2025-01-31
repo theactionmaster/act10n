@@ -148,14 +148,14 @@ If relevant, prompt the user to request updates, changes, or additions to Interl
 
 PREBUILT_COMMANDS = {
     "/weeklyflashcards": {
-        "title": "Weekly Flashcards",
-        "description": "Generate a set of flashcards for this week's AP Human Geography terms",
-        "prompt": "Please create a set of flashcards for this week's AP Human Geography terms with definitions and examples."
+        "title": "/weeklyflashcards",
+        "description": "Paste a list of human geography terms.",
+        "prompt": "With the following AP Human Geography vocabulary words, please created a bulleted list formatted as such: Term:(in bold) Definition. In a sub-bullet point, say In Other Words: (in bold) then a rephrasing or other way to explain the term. In a next-line bullet point, say Examples: (in bold) and then create a list of max. 5 examples."
     },
     "/cornellformat": {
-        "title": "Cornell Notes Format",
-        "description": "Convert text into Cornell Notes format with main ideas, details, and summary",
-        "prompt": "Please format the following text into Cornell Notes style with main ideas on the left, details on the right, and a summary at the bottom:"
+        "title": "/cornellformat",
+        "description": "Paste your digital Biology notes.",
+        "prompt": "Please format the following text for Pre-AP Biology into Cornell Notes style with main ideas on the left, cues as headers for each section, details on the right, and a comprehensive summary (with a slight focus on defined terms) at the bottom:"
     }
     # Add more as needed
 }
