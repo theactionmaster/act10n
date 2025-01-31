@@ -150,7 +150,7 @@ PREBUILT_COMMANDS = {
     "/weeklyflashcards": {
         "title": "/weeklyflashcards",
         "description": "Paste a list of human geography terms.",
-        "prompt": "With the following AP Human Geography vocabulary words, please created a bulleted list formatted as such: Term:(in bold) Definition. In a sub-bullet point, say In Other Words: (in bold) then a rephrasing or other way to explain the term. In a next-line bullet point, say Examples: (in bold) and then create a list of max. 5 examples."
+        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more."
     },
     "/cornellformat": {
         "title": "/cornellformat",
