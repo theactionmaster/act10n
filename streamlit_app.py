@@ -322,7 +322,7 @@ def main():
     )
 
     # File Upload Section
-    with st.sidebar.expander("File Upload", expanded=True):
+    with st.sidebar.expander("**File Upload**", expanded=False):
         uploaded_files = st.file_uploader(
             "Upload images, videos, audio, or documents", 
             type=[
@@ -339,7 +339,7 @@ def main():
             pass
 
     # Camera Input Section
-    with st.sidebar.expander("Camera Input", expanded=True):
+    with st.sidebar.expander("**Camera Input**", expanded=False):
         camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
         
         if camera_enabled != st.session_state.camera_enabled:
@@ -354,11 +354,11 @@ def main():
                 st.success("Image captured! You can now ask about the image.")
 
     # Voice Input Section
-    with st.sidebar.expander("Voice Input", expanded=True):
+    with st.sidebar.expander("**Voice Input**", expanded=False):
         audio_input = st.audio_input("Record your question")
 
     # Prebuilt Commands Section
-    with st.sidebar.expander("Prebuilt Commands", expanded=True):
+    with st.sidebar.expander("**Prebuilt Commands**", expanded=False):
         for cmd, info in PREBUILT_COMMANDS.items():
             col1, col2 = st.columns([4, 1])
             with col1:
