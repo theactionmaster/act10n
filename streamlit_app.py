@@ -497,3 +497,6 @@ def main():
 
         if st.session_state.camera_image and not st.session_state.camera_enabled:
             st.session_state.camera_image = None
+
+if __name__ == "__main__":
+    main()
