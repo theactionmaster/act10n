@@ -142,7 +142,23 @@ Question of the Day (QOTD): A daily random question to reinforce key test topics
 Productivity Tools: General tools to enhance efficiency and focus.
 
 These resources are designed to support CVHS students in excelling academically and managing their workload effectively.
+
+If needed, mention the user to request updates to InterlinkCVHS at https://interlinkcvhs.org/requests
 """
+
+PREBUILT_COMMANDS = {
+    "/weeklyflashcards": {
+        "title": "Weekly Flashcards",
+        "description": "Generate a set of flashcards for this week's AP Human Geography terms",
+        "prompt": "Please create a set of flashcards for this week's AP Human Geography terms with definitions and examples."
+    },
+    "/cornellformat": {
+        "title": "Cornell Notes Format",
+        "description": "Convert text into Cornell Notes format with main ideas, details, and summary",
+        "prompt": "Please format the following text into Cornell Notes style with main ideas on the left, details on the right, and a summary at the bottom:"
+    }
+    # Add more commands as needed
+}
 
 def process_response(text):
     lines = text.split('\n')
@@ -235,6 +251,54 @@ def initialize_session_state():
     if 'camera_enabled' not in st.session_state:
         st.session_state.camera_enabled = False
 
+def render_command_buttons():
+    st.subheader("Prebuilt Commands")
+    
+    for i in range(0, len(PREBUILT_COMMANDS), 2):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if i < len(PREBUILT_COMMANDS):
+                cmd = list(PREBUILT_COMMANDS.keys())[i]
+                info = PREBUILT_COMMANDS[cmd]
+                
+                button_col, help_col = st.columns([4, 1])
+                with button_col:
+                    if st.button(info["title"], key=f"cmd_{i}"):
+                        return cmd
+                with help_col:
+                    help_key = f"help_{i}"
+                    if help_key not in st.session_state:
+                        st.session_state[help_key] = False
+                    
+                    if st.button("?" if not st.session_state[help_key] else "×", key=f"help_btn_{i}"):
+                        st.session_state[help_key] = not st.session_state[help_key]
+                
+                if st.session_state[help_key]:
+                    st.info(info["description"])
+        
+        with col2:
+            if i + 1 < len(PREBUILT_COMMANDS):
+                cmd = list(PREBUILT_COMMANDS.keys())[i + 1]
+                info = PREBUILT_COMMANDS[cmd]
+                
+                button_col, help_col = st.columns([4, 1])
+                with button_col:
+                    if st.button(info["title"], key=f"cmd_{i+1}"):
+                        return cmd
+                with help_col:
+                    help_key = f"help_{i+1}"
+                    if help_key not in st.session_state:
+                        st.session_state[help_key] = False
+                    
+                    if st.button("?" if not st.session_state[help_key] else "×", key=f"help_btn_{i+1}"):
+                        st.session_state[help_key] = not st.session_state[help_key]
+                
+                if st.session_state[help_key]:
+                    st.info(info["description"])
+    
+    return None
+
 def get_audio_hash(audio_data):
     return hashlib.md5(audio_data.getvalue()).hexdigest()
 
@@ -304,6 +368,20 @@ def main():
         link="https://interlinkcvhs.org/",
         icon_image=INTERLINK_LOGO,
     )
+
+    # Add prebuilt commands section
+    selected_command = render_command_buttons()
+    
+    if "current_command" not in st.session_state:
+        st.session_state.current_command = None
+    
+    if selected_command:
+        st.session_state.current_command = selected_command
+    
+    if st.session_state.current_command:
+        st.write(f"Prebuilt Commands: {st.session_state.current_command}")
+    else:
+        st.write("Prebuilt Commands: none")
 
     st.sidebar.subheader("File Upload")
     uploaded_files = st.sidebar.file_uploader(
@@ -412,6 +490,12 @@ def main():
     prompt = st.chat_input("What can I help you with?")
 
     if prompt:
+        final_prompt = prompt
+        if st.session_state.current_command:
+            command_prompt = PREBUILT_COMMANDS[st.session_state.current_command]["prompt"]
+            final_prompt = f"{command_prompt}\n{prompt}"
+            st.session_state.current_command = None
+
         input_parts = []
         
         if st.session_state.uploaded_files:
@@ -427,7 +511,7 @@ def main():
                 'data': st.session_state.camera_image.getvalue()
             })
 
-        input_parts.append(prompt)
+        input_parts.append(final_prompt)
 
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
