@@ -383,88 +383,83 @@ def main():
     )
 
     # File Upload Section
-    with st.sidebar.expander("**File Upload**", expanded=False):
-        uploaded_files = st.file_uploader(
-            "Upload files to analyze", 
-            type=[
-                'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
-                'mp4', 'avi', 'mov', 'mkv', 'webm',
-                'mp3', 'wav', 'ogg', 'm4a',
-                'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
-            ],
-            accept_multiple_files=True
-        )
+    with st.sidebar:
+        with st.expander("**File Upload**", expanded=False):
+            uploaded_files = st.file_uploader(
+                "Upload files to analyze", 
+                type=[
+                    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
+                    'mp4', 'avi', 'mov', 'mkv', 'webm',
+                    'mp3', 'wav', 'ogg', 'm4a',
+                    'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
+                ],
+                accept_multiple_files=True
+            )
 
-        if uploaded_files:
-            oversized_files = []
-            valid_files = []
-            
-            for file in uploaded_files:
-                if file.size > 20 * 1024 * 1024:  # 20MB limit
-                    oversized_files.append(file.name)
-                else:
-                    valid_files.append(file)
-            
-            if oversized_files:
-                st.sidebar.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
-            
-            st.session_state.uploaded_files = valid_files
-            
-            if valid_files:
-                with st.expander("**File Previews**", expanded=False):
-                    for file in valid_files:
-                        show_file_preview(file)
+            if uploaded_files:
+                oversized_files = []
+                valid_files = []
                 
-                st.success(f"{len(valid_files)} file(s) uploaded successfully")
+                for file in uploaded_files:
+                    if file.size > 20 * 1024 * 1024:  # 20MB limit
+                        oversized_files.append(file.name)
+                    else:
+                        valid_files.append(file)
+                
+                if oversized_files:
+                    st.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
+                
+                st.session_state.uploaded_files = valid_files
 
     # Camera Input Section
-    with st.sidebar.expander("**Camera Input**", expanded=False):
-        camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
-        
-        if camera_enabled != st.session_state.camera_enabled:
-            st.session_state.camera_enabled = camera_enabled
-            st.session_state.camera_image = None
+    with st.sidebar:
+        with st.expander("**Camera Input**", expanded=False):
+            camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
             
-        if st.session_state.camera_enabled:
-            camera_image = st.camera_input("Take a picture")
-            if camera_image is not None:
-                st.session_state.camera_image = camera_image
-                st.image(camera_image, caption="Captured Image")
-                st.success("Image captured! You can now ask about the image.")
+            if camera_enabled != st.session_state.camera_enabled:
+                st.session_state.camera_enabled = camera_enabled
+                st.session_state.camera_image = None
+                
+            if st.session_state.camera_enabled:
+                camera_image = st.camera_input("Take a picture")
+                if camera_image is not None:
+                    st.session_state.camera_image = camera_image
+                    st.image(camera_image, caption="Captured Image")
+                    st.success("Image captured! You can now ask about the image.")
 
     # Voice Input Section
-    with st.sidebar.expander("**Voice Input**", expanded=False):
-        audio_input = st.audio_input("Record your question")
+    with st.sidebar:
+        with st.expander("**Voice Input**", expanded=False):
+            audio_input = st.audio_input("Record your question")
 
     # Prebuilt Commands Section
-    with st.sidebar.expander("**Prebuilt Commands**", expanded=False):
-        current_command = None
-        for cmd, info in PREBUILT_COMMANDS.items():
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                if st.button(info["title"], key=f"cmd_{cmd}"):
-                    if "current_command" not in st.session_state:
-                        st.session_state.current_command = None
-                    # Toggle command state
-                    if st.session_state.current_command == cmd:
-                        st.session_state.current_command = None
-                    else:
-                        st.session_state.current_command = cmd
-                    current_command = st.session_state.current_command
-            with col2:
-                help_key = f"help_{cmd}"
-                if help_key not in st.session_state:
-                    st.session_state[help_key] = False
-                if st.button("×" if st.session_state[help_key] else "?", key=f"help_btn_{cmd}"):
-                    st.session_state[help_key] = not st.session_state[help_key]
-            if st.session_state[help_key]:
-                st.info(info["description"])
-        
-        # Display current command status
-        if current_command:
-            st.write(f"**Prebuilt Commands:** {current_command}")
-        else:
-            st.write("**Prebuilt Commands:** none")
+    with st.sidebar:
+        with st.expander("**Prebuilt Commands**", expanded=False):
+            current_command = None
+            for cmd, info in PREBUILT_COMMANDS.items():
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    if st.button(info["title"], key=f"cmd_{cmd}"):
+                        if "current_command" not in st.session_state:
+                            st.session_state.current_command = None
+                        if st.session_state.current_command == cmd:
+                            st.session_state.current_command = None
+                        else:
+                            st.session_state.current_command = cmd
+                        current_command = st.session_state.current_command
+                with col2:
+                    help_key = f"help_{cmd}"
+                    if help_key not in st.session_state:
+                        st.session_state[help_key] = False
+                    if st.button("×" if st.session_state[help_key] else "?", key=f"help_btn_{cmd}"):
+                        st.session_state[help_key] = not st.session_state[help_key]
+                if st.session_state[help_key]:
+                    st.info(info["description"])
+            
+            if current_command:
+                st.write(f"**Prebuilt Commands:** {current_command}")
+            else:
+                st.write("**Prebuilt Commands:** none")
 
     # Display messages
     for message in st.session_state.messages:
