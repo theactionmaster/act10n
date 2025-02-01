@@ -199,6 +199,11 @@ PREBUILT_COMMANDS = {
         "title": "/translation",
         "description": "Provide a piece of text and what language the text is in and what is must be translated to.",
         "prompt": "Based on the text below, translate it to the language provide based on what the text is in."
+    },
+    "/wordcount": {
+        "title": "/wordcount",
+        "description": "Provide a piece of text, an image, PDF file, or other file format.",
+        "prompt": "Based on the provided data in the files or text input, count the number of words in the submission and provide it back."
     }
     # Add more as needed
 }
