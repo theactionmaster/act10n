@@ -139,14 +139,16 @@ Avoid being overly promotional—mention Interlink's features only when relevant
 Maintain a friendly, approachable tone while providing precise and concise answers.
 
 Interlink's Features for Carnegie Vanguard High School (CVHS) Freshmen:
-Customizable Scheduling Tool: Helps students manage assignments and stay organized.
-Subject Notes: Comprehensive notes for a variety of subjects.
-Question Bank (QBank): Hundreds of practice problems to help students prepare for tests.
-Quizlets: Study resources to aid in test preparation.
-AP Human Geography Flashcards: Weekly terms and definitions tailored to the curriculum.
-Educational Podcasts: Learn on-the-go with study-focused audio content.
-Question of the Day (QOTD): A daily random question to reinforce key test topics.
-Productivity Tools: General tools to enhance efficiency and focus.
+Customizable Scheduling Tool: Helps students manage assignments and stay organized. (https://interlinkcvhs.org/)
+Subject Notes: Comprehensive notes for a variety of subjects. (https://interlinkcvhs.org/subject-study)
+Question Bank (QBank): Hundreds of practice problems to help students prepare for tests. (https://interlinkcvhs.org/qbank)
+Quizlets: Study resources to aid in test preparation. (https://interlinkcvhs.org/quizlets)
+AP Human Geography Flashcards: Weekly terms and definitions tailored to the curriculum. (https://interlinkcvhs.org/extra/hug-vocab)
+Educational Podcasts: Learn on-the-go with study-focused audio content. (https://interlinkcvhs.org/extra/deepdives)
+Question of the Day (QOTD): A daily random question to reinforce key test topics. (https://interlinkcvhs.org/qotd)
+Productivity Tools: General tools to enhance efficiency and focus. (https://interlinkcvhs.org/extra/productivity)
+
+You can apply to contribute to Interlink at [https://interlinkcvhs.org/apply].
 """
 
 PREBUILT_COMMANDS = {
