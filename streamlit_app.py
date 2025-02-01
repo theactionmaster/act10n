@@ -435,6 +435,24 @@ def main():
     with st.sidebar.expander("**Voice Input**", expanded=False):
         audio_input = st.audio_input("Record your question")
 
+    # Prebuilt Commands Section
+    with st.sidebar.expander("**Prebuilt Commands**", expanded=False):
+        for cmd, info in PREBUILT_COMMANDS.items():
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                if st.button(info["title"], key=f"cmd_{cmd}"):
+                    if "current_command" not in st.session_state:
+                        st.session_state.current_command = None
+                    st.session_state.current_command = cmd
+            with col2:
+                help_key = f"help_{cmd}"
+                if help_key not in st.session_state:
+                    st.session_state[help_key] = False
+                if st.button("×" if st.session_state[help_key] else "?", key=f"help_btn_{cmd}"):
+                    st.session_state[help_key] = not st.session_state[help_key]
+            if st.session_state[help_key]:
+                st.info(info["description"])
+
     # Display messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -482,6 +500,12 @@ def main():
     prompt = st.chat_input("What can I help you with?")
 
     if prompt:
+        final_prompt = prompt
+        if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
+            command_prompt = PREBUILT_COMMANDS[st.session_state.current_command]["prompt"]
+            final_prompt = f"{command_prompt}\n{prompt}"
+            st.session_state.current_command = None
+
         input_parts = []
         
         if st.session_state.uploaded_files:
@@ -497,7 +521,7 @@ def main():
                 'data': st.session_state.camera_image.getvalue()
             })
 
-        input_parts.append(prompt)
+        input_parts.append(final_prompt)
 
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
