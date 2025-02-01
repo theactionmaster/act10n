@@ -419,7 +419,7 @@ def main():
 
     # File Upload Section
     with st.sidebar:
-        with st.expander("**FILE UPLOAD**", expanded=False):
+        with st.expander("**File Upload**", expanded=False):
             uploaded_files = st.file_uploader(
                 "Upload files to analyze", 
                 type=[
