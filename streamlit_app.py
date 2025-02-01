@@ -494,7 +494,7 @@ def main():
                     button_text = "×" if st.session_state[help_key] else "?"
                     if st.button(button_text, key=f"help_btn_{cmd}"):
                         st.session_state[help_key] = not st.session_state[help_key]
-                        st.experimental_rerun()
+                        st.rerun()
                         
                 if st.session_state[help_key]:
                     st.info(info["description"])
