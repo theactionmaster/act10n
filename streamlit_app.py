@@ -147,25 +147,58 @@ AP Human Geography Flashcards: Weekly terms and definitions tailored to the curr
 Educational Podcasts: Learn on-the-go with study-focused audio content.
 Question of the Day (QOTD): A daily random question to reinforce key test topics.
 Productivity Tools: General tools to enhance efficiency and focus.
-
-These resources are designed to support CVHS students in excelling academically and managing their workload effectively.
-
-If relevant, prompt the user to request updates, changes, or additions to InterlinkCVHS at https://interlinkcvhs.org/requests.
 """
 
 PREBUILT_COMMANDS = {
     "/weeklyflashcards": {
         "title": "/weeklyflashcards",
         "description": "Paste a list of human geography terms.",
-        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: (IMPORTANT: Everywhere after, where it says Term, replace that with the term listed, don't explicitly write Term: and Definition:, make sure to actually write out the definition instead of writing out 'Definition') First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more."
+        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such..."
     },
     "/cornellformat": {
         "title": "/cornellformat",
         "description": "Paste your digital Biology notes.",
-        "prompt": "Please format the following text for Pre-AP Biology into Cornell Notes style with main ideas on the left, cues as headers for each section, details on the right, and a comprehensive summary (with a slight focus on defined terms) at the bottom:"
+        "prompt": "Please format the following text for Pre-AP Biology into Cornell Notes style..."
     }
-    # Add more as needed
 }
+
+def extract_pdf_text(file):
+    try:
+        pdf = PdfReader(file)
+        text = ""
+        for page in pdf.pages:
+            text += page.extract_text()
+        return text
+    except Exception as e:
+        return f"Error extracting PDF text: {str(e)}"
+
+def extract_docx_text(file):
+    try:
+        doc = Document(file)
+        return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    except Exception as e:
+        return f"Error extracting DOCX text: {str(e)}"
+
+def extract_image_text(file):
+    try:
+        image = Image.open(file)
+        return pytesseract.image_to_string(image)
+    except Exception as e:
+        return f"Error extracting image text: {str(e)}"
+
+def process_structured_data(file, mime_type):
+    try:
+        if mime_type == 'text/csv':
+            df = pd.read_csv(file)
+            return df.to_string()
+        elif mime_type == 'application/json':
+            return json.dumps(json.load(file), indent=2)
+        elif mime_type == 'application/xml':
+            tree = ET.parse(file)
+            return ET.tostring(tree.getroot(), encoding='unicode', method='xml')
+        return file.read().decode('utf-8')
+    except Exception as e:
+        return f"Error processing structured data: {str(e)}"
 
 def process_response(text):
     lines = text.split('\n')
@@ -190,7 +223,6 @@ def detect_file_type(uploaded_file):
     file_ext = os.path.splitext(filename)[1].lower()
     
     mime_mappings = {
-        # Image types
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg', 
         '.png': 'image/png',
@@ -198,21 +230,15 @@ def detect_file_type(uploaded_file):
         '.bmp': 'image/bmp',
         '.webp': 'image/webp',
         '.tiff': 'image/tiff',
-        
-        # Video types
         '.mp4': 'video/mp4',
         '.avi': 'video/x-msvideo', 
         '.mov': 'video/quicktime',
         '.mkv': 'video/x-matroska',
         '.webm': 'video/webm',
-        
-        # Audio types
         '.mp3': 'audio/mpeg',
         '.wav': 'audio/wav',
         '.ogg': 'audio/ogg',
         '.m4a': 'audio/mp4',
-        
-        # Document types
         '.pdf': 'application/pdf',
         '.doc': 'application/msword',
         '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -228,73 +254,6 @@ def detect_file_type(uploaded_file):
     
     mime_type, _ = mimetypes.guess_type(filename)
     return mime_type or 'application/octet-stream'
-
-def extract_pdf_text(file):
-    pdf = PdfReader(file)
-    text = ""
-    for page in pdf.pages:
-        text += page.extract_text()
-    return text
-
-def extract_docx_text(file):
-    doc = Document(file)
-    return "\n".join([paragraph.text for paragraph in doc.paragraphs])
-
-def extract_image_text(file):
-    image = Image.open(file)
-    return pytesseract.image_to_string(image)
-
-def process_structured_data(file, mime_type):
-    if mime_type == 'text/csv':
-        df = pd.read_csv(file)
-        return df.to_string()
-    elif mime_type == 'application/json':
-        return json.load(file)
-    elif mime_type == 'application/xml':
-        tree = ET.parse(file)
-        return ET.tostring(tree.getroot(), encoding='unicode')
-    return file.read().decode('utf-8')
-
-def process_uploaded_file(file):
-    mime_type = detect_file_type(file)
-    content = None
-    
-    try:
-        if mime_type.startswith('application/pdf'):
-            content = extract_pdf_text(file)
-        elif mime_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
-            content = extract_docx_text(file)
-        elif mime_type.startswith('image/'):
-            content = extract_image_text(file)
-        elif mime_type in ['text/csv', 'application/json', 'application/xml', 'text/plain']:
-            content = process_structured_data(file, mime_type)
-            
-        return {
-            'type': mime_type,
-            'content': content,
-            'name': file.name
-        }
-    except Exception as e:
-        return {
-            'type': mime_type,
-            'error': str(e),
-            'name': file.name
-        }
-
-def prepare_chat_input(prompt, files):
-    input_parts = []
-    
-    for file in files:
-        processed_file = process_uploaded_file(file)
-        if 'error' not in processed_file:
-            input_parts.append({
-                'type': processed_file['type'],
-                'content': processed_file['content'],
-                'name': processed_file['name']
-            })
-    
-    input_parts.append(prompt)
-    return input_parts
 
 def initialize_session_state():
     if 'chat_model' not in st.session_state:
@@ -330,7 +289,6 @@ def get_audio_hash(audio_data):
 
 def convert_audio_to_text(audio_file):
     recognizer = sr.Recognizer()
-    
     try:
         with sr.AudioFile(audio_file) as source:
             audio_data = recognizer.record(source)
@@ -343,7 +301,6 @@ def convert_audio_to_text(audio_file):
 
 def save_audio_file(audio_data):
     audio_bytes = audio_data.getvalue()
-    
     with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmpfile:
         tmpfile.write(audio_bytes)
         return tmpfile.name
@@ -366,18 +323,7 @@ def handle_chat_response(response, message_placeholder):
         message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
     
     message_placeholder.markdown(full_response, unsafe_allow_html=True)
-    
     return full_response
-
-def handle_file_error(error_info):
-    error_messages = {
-        'UnsupportedFormat': 'File format not supported',
-        'ProcessingError': 'Error processing file',
-        'SizeExceeded': 'File size too large',
-        'CorruptFile': 'File appears to be corrupted'
-    }
-    
-    return error_messages.get(error_info, 'Unknown error occurred')
 
 def show_file_preview(uploaded_file):
     mime_type = detect_file_type(uploaded_file)
@@ -390,6 +336,36 @@ def show_file_preview(uploaded_file):
         st.sidebar.audio(uploaded_file)
     else:
         st.sidebar.info(f"Uploaded: {uploaded_file.name} (Type: {mime_type})")
+
+def prepare_chat_input(prompt, files):
+    input_parts = []
+    
+    for file in files:
+        mime_type = detect_file_type(file)
+        content = None
+        
+        try:
+            if mime_type.startswith('application/pdf'):
+                content = extract_pdf_text(file)
+            elif mime_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                content = extract_docx_text(file)
+            elif mime_type.startswith('image/'):
+                content = extract_image_text(file)
+            elif mime_type in ['text/csv', 'application/json', 'application/xml', 'text/plain']:
+                content = process_structured_data(file, mime_type)
+            
+            if content:
+                input_parts.append({
+                    'type': mime_type,
+                    'content': content,
+                    'name': file.name
+                })
+        except Exception as e:
+            st.error(f"Error processing {file.name}: {str(e)}")
+            continue
+    
+    input_parts.append(prompt)
+    return input_parts
 
 def main():
     initialize_session_state()
@@ -408,7 +384,7 @@ def main():
     # File Upload Section
     with st.sidebar.expander("**File Upload**", expanded=False):
         uploaded_files = st.file_uploader(
-            "Upload images, videos, audio, or documents", 
+            "Upload files to analyze", 
             type=[
                 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
                 'mp4', 'avi', 'mov', 'mkv', 'webm',
@@ -419,8 +395,26 @@ def main():
         )
 
         if uploaded_files:
-            # [File handling code remains the same]
-            pass
+            oversized_files = []
+            valid_files = []
+            
+            for file in uploaded_files:
+                if file.size > 20 * 1024 * 1024:  # 20MB limit
+                    oversized_files.append(file.name)
+                else:
+                    valid_files.append(file)
+            
+            if oversized_files:
+                st.sidebar.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
+            
+            st.session_state.uploaded_files = valid_files
+            
+            if valid_files:
+                st.sidebar.markdown("### File Previews")
+                for file in valid_files:
+                    show_file_preview(file)
+                
+                st.sidebar.success(f"{len(valid_files)} file(s) uploaded successfully")
 
     # Camera Input Section
     with st.sidebar.expander("**Camera Input**", expanded=False):
@@ -441,24 +435,6 @@ def main():
     with st.sidebar.expander("**Voice Input**", expanded=False):
         audio_input = st.audio_input("Record your question")
 
-    # Prebuilt Commands Section
-    with st.sidebar.expander("**Prebuilt Commands**", expanded=False):
-        for cmd, info in PREBUILT_COMMANDS.items():
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                if st.button(info["title"], key=f"cmd_{cmd}"):
-                    if "current_command" not in st.session_state:
-                        st.session_state.current_command = None
-                    st.session_state.current_command = cmd
-            with col2:
-                help_key = f"help_{cmd}"
-                if help_key not in st.session_state:
-                    st.session_state[help_key] = False
-                if st.button("×" if st.session_state[help_key] else "?", key=f"help_btn_{cmd}"):
-                    st.session_state[help_key] = not st.session_state[help_key]
-            if st.session_state[help_key]:
-                st.info(info["description"])
-
     # Display messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -466,25 +442,46 @@ def main():
 
     # Handle audio input
     if audio_input is not None:
-        # [Audio handling code remains the same]
-        pass
-
-    # Display current command
-    if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
-        st.write(f"**Prebuilt Commands:** {st.session_state.current_command}")
-    else:
-        st.write("**Prebuilt Commands:** none")
+        audio_hash = get_audio_hash(audio_input)
+        
+        if audio_hash not in st.session_state.processed_audio_hashes:
+            try:
+                audio_file = save_audio_file(audio_input)
+                st.audio(audio_input, format='audio/wav')
+                
+                try:
+                    st.info("Converting speech to text...")
+                    transcribed_text = convert_audio_to_text(audio_file)
+                    
+                    st.success("Speech converted to text!")
+                    st.text(f"Transcribed text: {transcribed_text}")
+                    
+                    st.chat_message("user").markdown(transcribed_text)
+                    st.session_state.messages.append({"role": "user", "content": transcribed_text})
+                    
+                    with st.chat_message("assistant"):
+                        message_placeholder = st.empty()
+                        response = st.session_state.chat_session.send_message(transcribed_text)
+                        full_response = handle_chat_response(response, message_placeholder)
+                        
+                        st.session_state.messages.append({
+                            "role": "assistant", 
+                            "content": full_response
+                        })
+                    
+                    st.session_state.processed_audio_hashes.add(audio_hash)
+                    
+                finally:
+                    os.unlink(audio_file)
+                    
+            except Exception as e:
+                st.error(f"An error occurred while processing the audio: {str(e)}")
+                st.warning("Please try again or type your question instead.")
 
     # Chat input handling
     prompt = st.chat_input("What can I help you with?")
 
     if prompt:
-        final_prompt = prompt
-        if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
-            command_prompt = PREBUILT_COMMANDS[st.session_state.current_command]["prompt"]
-            final_prompt = f"{command_prompt}\n{prompt}"
-            st.session_state.current_command = None
-
         input_parts = []
         
         if st.session_state.uploaded_files:
@@ -500,7 +497,7 @@ def main():
                 'data': st.session_state.camera_image.getvalue()
             })
 
-        input_parts.append(final_prompt)
+        input_parts.append(prompt)
 
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
