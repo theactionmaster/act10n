@@ -164,6 +164,36 @@ PREBUILT_COMMANDS = {
         "title": "/answer4math",
         "description": "Provide math questions in a typed-out, image, PDF, or other file format.",
         "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines (no enters or new lines, keep everything just in one line, super concise, use markdown as necessary), show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers."
+    },
+    "/summarize": {
+        "title": "/summarize",
+        "description": "Provide a long set of notes/an article.",
+        "prompt": "Summarize the following notes or article into key points and brief 1-2 paragraph summary. Highlight the most important concepts and facts, focus on key definitions."
+    },
+    "/check4grammar": {
+        "title": "/check4grammar",
+        "description": "Provide a set of text for grammar to be verified.",
+        "prompt": "Check the following text for grammatical errors and provide a bulleted list of corrections needed to fix. At the end, in a new line, provide the full text completed revised. Highligh the revised sections in bold."
+    },
+    "/synonyms": {
+        "title": "/synonyms",
+        "description": "Provide a word to find synonyms.",
+        "prompt": "For the word provided below, provide a definition, examples, and also synonyms. Also provide 1-3 antonyms at the bottom."
+    },
+    "/essayoutline": {
+        "title": "/essayoutline",
+        "description": "Paste a topic for an essay, as detailed as possible.",
+        "prompt": "Based on the following topic provided and details, create a 5-paragraph essay outline (unless otherwise mentioned below for changes in the numbers of paragraphs or format) which has an introduction, three body paragraphs, and a conclusion. It should be formatted very professionally with clear topics and correct grammar."
+    },
+    "/litanalysis": {
+        "title": "/litanalysis",
+        "description": "Provide of piece of literature or an excerpt to be analyzed.",
+        "prompt": "Analyze the following text and provide detailed, comprehensive summaries and insights on characters, themes, main ideas or various sections, and symbolism used. Have a comprehensive view for a high school classroom-type insight for the literature provided."
+    },
+    "/translation": {
+        "title": "/translation",
+        "description": "Provide a piece of text and what language the text is in and what is must be translated to.",
+        "prompt": "Based on the text below, translate it to the language provide based on what the text is in."
     }
     # Add more as needed
 }
