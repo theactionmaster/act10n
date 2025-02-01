@@ -163,7 +163,7 @@ PREBUILT_COMMANDS = {
     "/answer4math": {
         "title": "/answer4math",
         "description": "Provide math questions in a typed-out, image, PDF, or other file format.",
-        "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines, show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers."
+        "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines (no enters or new lines, keep everything just in one line, super concise, use markdown as necessary), show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers."
     }
     # Add more as needed
 }
