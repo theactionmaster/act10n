@@ -7,6 +7,13 @@ import mimetypes
 import tempfile
 import speech_recognition as sr
 import hashlib
+from PyPDF2 import PdfReader
+from docx import Document
+import pytesseract
+from PIL import Image
+import pandas as pd
+import json
+import xml.etree.ElementTree as ET
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
@@ -222,6 +229,73 @@ def detect_file_type(uploaded_file):
     mime_type, _ = mimetypes.guess_type(filename)
     return mime_type or 'application/octet-stream'
 
+def extract_pdf_text(file):
+    pdf = PdfReader(file)
+    text = ""
+    for page in pdf.pages:
+        text += page.extract_text()
+    return text
+
+def extract_docx_text(file):
+    doc = Document(file)
+    return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+
+def extract_image_text(file):
+    image = Image.open(file)
+    return pytesseract.image_to_string(image)
+
+def process_structured_data(file, mime_type):
+    if mime_type == 'text/csv':
+        df = pd.read_csv(file)
+        return df.to_string()
+    elif mime_type == 'application/json':
+        return json.load(file)
+    elif mime_type == 'application/xml':
+        tree = ET.parse(file)
+        return ET.tostring(tree.getroot(), encoding='unicode')
+    return file.read().decode('utf-8')
+
+def process_uploaded_file(file):
+    mime_type = detect_file_type(file)
+    content = None
+    
+    try:
+        if mime_type.startswith('application/pdf'):
+            content = extract_pdf_text(file)
+        elif mime_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+            content = extract_docx_text(file)
+        elif mime_type.startswith('image/'):
+            content = extract_image_text(file)
+        elif mime_type in ['text/csv', 'application/json', 'application/xml', 'text/plain']:
+            content = process_structured_data(file, mime_type)
+            
+        return {
+            'type': mime_type,
+            'content': content,
+            'name': file.name
+        }
+    except Exception as e:
+        return {
+            'type': mime_type,
+            'error': str(e),
+            'name': file.name
+        }
+
+def prepare_chat_input(prompt, files):
+    input_parts = []
+    
+    for file in files:
+        processed_file = process_uploaded_file(file)
+        if 'error' not in processed_file:
+            input_parts.append({
+                'type': processed_file['type'],
+                'content': processed_file['content'],
+                'name': processed_file['name']
+            })
+    
+    input_parts.append(prompt)
+    return input_parts
+
 def initialize_session_state():
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
@@ -294,6 +368,16 @@ def handle_chat_response(response, message_placeholder):
     message_placeholder.markdown(full_response, unsafe_allow_html=True)
     
     return full_response
+
+def handle_file_error(error_info):
+    error_messages = {
+        'UnsupportedFormat': 'File format not supported',
+        'ProcessingError': 'Error processing file',
+        'SizeExceeded': 'File size too large',
+        'CorruptFile': 'File appears to be corrupted'
+    }
+    
+    return error_messages.get(error_info, 'Unknown error occurred')
 
 def show_file_preview(uploaded_file):
     mime_type = detect_file_type(uploaded_file)
