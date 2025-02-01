@@ -150,15 +150,20 @@ Productivity Tools: General tools to enhance efficiency and focus.
 """
 
 PREBUILT_COMMANDS = {
-    "/weeklyflashcards": {
-        "title": "/weeklyflashcards",
+    "/weeklyhgflashcards": {
+        "title": "/weeklyhgflashcards",
         "description": "Paste a list of human geography terms.",
         "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: (IMPORTANT: Everywhere after, where it says Term, replace that with the term listed, don't explicitly write Term: and Definition: - make sure that you don't write out 'Definition' you actually put the definition of the term before) First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more."
     },
     "/cornellformat": {
         "title": "/cornellformat",
-        "description": "Paste your digital Biology notes.",
-        "prompt": "Please format the following text for Pre-AP Biology into Cornell Notes style with main ideas on the left, cues as headers for each section, details on the right, and a comprehensive summary (with a slight focus on defined terms) at the bottom:"
+        "description": "Paste your digital notes.",
+        "prompt": "Format the following notes into a Cornell Notes tabular format. First, before the table, should be the title. Then, create a table with two columns and multiple rows as necessary. The header for the two columns is Cues | Notes. The cues section contains questions that the corresponding notes answer. There can be multiple related lines of notes for one cue. At the end of all the cues & notes, after the table, type Summary: (in bold) and then a comprehensive, detailed summary of the notes with all necessary information while keeping it concise."
+    },
+    "/answer4math": {
+        "title": "/answer4math",
+        "description": "Provide math questions in a typed-out, image, PDF, or other file format.",
+        "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines, show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers."
     }
     # Add more as needed
 }
