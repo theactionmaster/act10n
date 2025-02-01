@@ -444,8 +444,12 @@ def main():
                 if st.button(info["title"], key=f"cmd_{cmd}"):
                     if "current_command" not in st.session_state:
                         st.session_state.current_command = None
-                    st.session_state.current_command = cmd
-                    current_command = cmd
+                    # Toggle command state
+                    if st.session_state.current_command == cmd:
+                        st.session_state.current_command = None
+                    else:
+                        st.session_state.current_command = cmd
+                    current_command = st.session_state.current_command
             with col2:
                 help_key = f"help_{cmd}"
                 if help_key not in st.session_state:
@@ -455,6 +459,7 @@ def main():
             if st.session_state[help_key]:
                 st.info(info["description"])
         
+        # Display current command status
         if current_command:
             st.write(f"**Prebuilt Commands:** {current_command}")
         else:
