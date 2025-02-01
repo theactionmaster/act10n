@@ -357,10 +357,6 @@ def handle_chat_response(response, message_placeholder):
     full_response = ""
     formatted_response = process_response(response.text)
     
-    command_prefix = ""
-    if 'current_command' in st.session_state and st.session_state.current_command:
-        command_prefix = f"[{st.session_state.current_command}] "
-    
     chunks = []
     for line in formatted_response.split('\n'):
         chunks.extend(line.split(' '))
@@ -372,9 +368,9 @@ def handle_chat_response(response, message_placeholder):
         else:
             full_response += chunk
         time.sleep(0.02)
-        message_placeholder.markdown(command_prefix + full_response + "▌", unsafe_allow_html=True)
+        message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
     
-    message_placeholder.markdown(command_prefix + full_response, unsafe_allow_html=True)
+    message_placeholder.markdown(full_response, unsafe_allow_html=True)
     return full_response
 
 def show_file_preview(uploaded_file):
@@ -423,11 +419,6 @@ def main():
     initialize_session_state()
 
     st.title("💬 Interlink AI")
-    if 'current_command' in st.session_state and st.session_state.current_command:
-        current_command = st.session_state.current_command
-        st.write(f"**Prebuilt Commands:** {current_command}")
-    else:
-        st.write("**Prebuilt Commands:** none")
     
     INTERLINK_LOGO = "interlink_logo.png"
 
@@ -492,6 +483,11 @@ def main():
     with st.sidebar:
         with st.expander("**Prebuilt Commands**", expanded=False):
             current_command = None
+            if 'current_command' in st.session_state and st.session_state.current_command:
+                current_command = st.session_state.current_command
+                st.write(f"**Prebuilt Commands:** {current_command}")
+            else:
+                st.write("**Prebuilt Commands:** none")
     
             for cmd, info in PREBUILT_COMMANDS.items():
                 col1, col2 = st.columns([4, 1])
@@ -515,16 +511,10 @@ def main():
                 if st.session_state[help_key]:
                     st.info(info["description"])
 
-    # Modify the message display loop to include command indicators
+    # Display messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            if message["role"] == "assistant":
-                command_prefix = ""
-                if 'current_command' in st.session_state and st.session_state.current_command:
-                    command_prefix = f"[{st.session_state.current_command}] "
-                st.markdown(command_prefix + message["content"], unsafe_allow_html=True)
-            else:
-                st.markdown(message["content"], unsafe_allow_html=True)
+            st.markdown(message["content"], unsafe_allow_html=True)
 
     # Handle audio input
     if audio_input is not None:
