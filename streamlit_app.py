@@ -410,11 +410,11 @@ def main():
             st.session_state.uploaded_files = valid_files
             
             if valid_files:
-                st.sidebar.markdown("### File Previews")
-                for file in valid_files:
-                    show_file_preview(file)
+                with st.expander("**File Previews**", expanded=False):
+                    for file in valid_files:
+                        show_file_preview(file)
                 
-                st.sidebar.success(f"{len(valid_files)} file(s) uploaded successfully")
+                st.success(f"{len(valid_files)} file(s) uploaded successfully")
 
     # Camera Input Section
     with st.sidebar.expander("**Camera Input**", expanded=False):
@@ -437,6 +437,7 @@ def main():
 
     # Prebuilt Commands Section
     with st.sidebar.expander("**Prebuilt Commands**", expanded=False):
+        current_command = None
         for cmd, info in PREBUILT_COMMANDS.items():
             col1, col2 = st.columns([4, 1])
             with col1:
@@ -444,6 +445,7 @@ def main():
                     if "current_command" not in st.session_state:
                         st.session_state.current_command = None
                     st.session_state.current_command = cmd
+                    current_command = cmd
             with col2:
                 help_key = f"help_{cmd}"
                 if help_key not in st.session_state:
@@ -452,6 +454,11 @@ def main():
                     st.session_state[help_key] = not st.session_state[help_key]
             if st.session_state[help_key]:
                 st.info(info["description"])
+        
+        if current_command:
+            st.write(f"**Prebuilt Commands:** {current_command}")
+        else:
+            st.write("**Prebuilt Commands:** none")
 
     # Display messages
     for message in st.session_state.messages:
