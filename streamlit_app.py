@@ -180,6 +180,11 @@ PREBUILT_COMMANDS = {
         "description": "Provide a word to find synonyms.",
         "prompt": "For the word provided below, provide a definition, examples, and also synonyms. Also provide 1-3 antonyms at the bottom."
     },
+    "/citation": {
+        "title": "/citation",
+        "description": "Paste any information for a source and what citation style you need.",
+        "prompt": "With the following information, format into a citation based on the citation style mentioned below. If there is no citation style, make it in multiple formats."
+    },
     "/essayoutline": {
         "title": "/essayoutline",
         "description": "Paste a topic for an essay, as detailed as possible.",
