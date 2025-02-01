@@ -470,15 +470,13 @@ def main():
     # Prebuilt Commands Section
     with st.sidebar:
         with st.expander("**Prebuilt Commands**", expanded=False):
-            # Status display first
             current_command = None
             if 'current_command' in st.session_state and st.session_state.current_command:
                 current_command = st.session_state.current_command
-                st.write(f"**Active:** {current_command}")
+                st.write(f"**Prebuilt Commands:** {current_command}")
             else:
-                st.write("**Active:** none")
+                st.write("**Prebuilt Commands:** none")
     
-            # Buttons after status
             for cmd, info in PREBUILT_COMMANDS.items():
                 col1, col2 = st.columns([4, 1])
                 with col1:
@@ -490,10 +488,15 @@ def main():
                         current_command = st.session_state.current_command
                 with col2:
                     help_key = f"help_{cmd}"
-                    if st.button("×" if st.session_state.get(help_key) else "?", 
-                               key=f"help_btn_{cmd}"):
-                        st.session_state[help_key] = not st.session_state.get(help_key, False)
-                if st.session_state.get(f"help_{cmd}"):
+                    if help_key not in st.session_state:
+                        st.session_state[help_key] = False
+                    
+                    button_text = "×" if st.session_state[help_key] else "?"
+                    if st.button(button_text, key=f"help_btn_{cmd}"):
+                        st.session_state[help_key] = not st.session_state[help_key]
+                        st.experimental_rerun()
+                        
+                if st.session_state[help_key]:
                     st.info(info["description"])
 
     # Display messages
