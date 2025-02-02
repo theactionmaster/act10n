@@ -114,6 +114,38 @@ st.markdown("""
         font-family: 'Montserrat', sans-serif !important;
     }
 </style>
+<script>
+document.addEventListener('paste', function(e) {
+    if (document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const items = e.clipboardData.items;
+        
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64data = e.target.result;
+                    window.parent.postMessage({
+                        type: 'clipboard_paste',
+                        data: base64data,
+                        format: 'image'
+                    }, '*');
+                };
+                reader.readAsDataURL(blob);
+            } else if (item.type === 'text/plain') {
+                item.getAsString(function(text) {
+                    window.parent.postMessage({
+                        type: 'clipboard_paste',
+                        data: text,
+                        format: 'text'
+                    }, '*');
+                });
+            }
+        }
+    }
+});
+</script>
 <center>
     <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
         interlinkcvhs.org
@@ -267,6 +299,29 @@ def process_response(text):
     text = re.sub(r'(\n[*-] .+?)(\n[^*\n-])', r'\1\n\2', text)
     
     return text.strip()
+
+# Add this function to handle clipboard data
+def handle_clipboard_data():
+    if 'clipboard_data' not in st.session_state:
+        st.session_state.clipboard_data = None
+        
+    clipboard_data = st.session_state.get('clipboard_data')
+    if clipboard_data:
+        if clipboard_data['format'] == 'image':
+            # Convert base64 to bytes
+            img_data = base64.b64decode(clipboard_data['data'].split(',')[1])
+            file = BytesIO(img_data)
+            file.name = 'pasted_image.png'
+            st.session_state.uploaded_files.append(file)
+        elif clipboard_data['format'] == 'text':
+            file = BytesIO(clipboard_data['data'].encode())
+            file.name = 'pasted_text.txt'
+            st.session_state.uploaded_files.append(file)
+            
+        # Clear clipboard data after processing
+        st.session_state.clipboard_data = None
+        # Auto-expand file upload section
+        st.session_state.file_upload_expanded = True
 
 def detect_file_type(uploaded_file):
     filename = uploaded_file.name
@@ -434,6 +489,7 @@ def main():
     # File Upload Section
     with st.sidebar:
         with st.expander("**File Upload**", expanded=False):
+            handle_clipboard_data()  # Handle clipboard data before file uploader
             uploaded_files = st.file_uploader(
                 "Upload files to analyze", 
                 type=[
