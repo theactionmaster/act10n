@@ -14,6 +14,8 @@ from PIL import Image
 import pandas as pd
 import json
 import xml.etree.ElementTree as ET
+from io import BytesIO
+import base64
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
