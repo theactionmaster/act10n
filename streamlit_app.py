@@ -145,6 +145,19 @@ document.addEventListener('paste', function(e) {
         }
     }
 });
+window.addEventListener('message', function(e) {
+    if (e.data.type === 'clipboard_paste') {
+        const args = {
+            'data': e.data.data,
+            'format': e.data.format
+        };
+        window.parent.postMessage({
+            type: 'streamlit:set_widget_value',
+            key: 'clipboard_data',
+            value: args
+        }, '*');
+    }
+});
 </script>
 <center>
     <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
@@ -388,6 +401,11 @@ def initialize_session_state():
         
     if 'camera_enabled' not in st.session_state:
         st.session_state.camera_enabled = False
+
+    if 'clipboard_data' not in st.session_state:
+        st.session_state.clipboard_data = None
+    if 'file_upload_expanded' not in st.session_state:
+        st.session_state.file_upload_expanded = False
 
 def get_audio_hash(audio_data):
     return hashlib.md5(audio_data.getvalue()).hexdigest()
