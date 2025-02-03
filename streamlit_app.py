@@ -224,6 +224,11 @@ PREBUILT_COMMANDS = {
         "description": "Provide a set of text for grammar to be verified.",
         "prompt": "Check the following text for grammatical errors and provide a bulleted list of corrections needed to fix. At the end, in a new line, provide the full text completed revised. Highligh the revised sections in bold."
     },
+    "/paraphrase": {
+        "title": "/paraphrease",
+        "description": "Provide a set of text to be paraphrased.",
+        "prompt": "Provide only a rephrased version of the text. Change wording, structure, and organization of the text provided."
+    },
     "/synonyms": {
         "title": "/synonyms",
         "description": "Provide a word to find synonyms.",
