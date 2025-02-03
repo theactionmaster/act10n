@@ -202,62 +202,74 @@ PREBUILT_COMMANDS = {
     "/weeklyhgflashcards": {
         "title": "/weeklyhgflashcards",
         "description": "Paste a list of human geography terms.",
-        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: (IMPORTANT: Everywhere after, where it says Term, replace that with the term listed, don't explicitly write Term: and Definition: - make sure that you don't write out 'Definition' you actually put the definition of the term before) First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more."
+        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: (IMPORTANT: Everywhere after, where it says Term, replace that with the term listed, don't explicitly write Term: and Definition: - make sure that you don't write out 'Definition' you actually put the definition of the term before) First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more.",
+        "message_text": "**Active Command:** Weekly Human Geography Flashcards", 
     },
     "/cornellformat": {
         "title": "/cornellformat",
         "description": "Paste your digital notes.",
-        "prompt": "Format the following notes into a Cornell Notes tabular format. First, before the table, should be the title. Then, create a table with two columns and multiple rows as necessary. The header for the two columns is Cues | Notes. The cues section contains questions that the corresponding notes answer. There can be multiple related lines of notes for one cue. At the end of all the cues & notes, after the table, type Summary: (in bold) and then a comprehensive, detailed summary of the notes with all necessary information while keeping it concise."
+        "prompt": "Format the following notes into a Cornell Notes tabular format. First, before the table, should be the title. Then, create a table with two columns and multiple rows as necessary. The header for the two columns is Cues | Notes. The cues section contains questions that the corresponding notes answer. There can be multiple related lines of notes for one cue. At the end of all the cues & notes, after the table, type Summary: (in bold) and then a comprehensive, detailed summary of the notes with all necessary information while keeping it concise.",
+        "message_text": "**Active Command:** Cornell Notes Format", 
     },
     "/answer4math": {
         "title": "/answer4math",
         "description": "Provide math questions in a typed-out, image, PDF, or other file format.",
-        "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines (no enters or new lines, keep everything just in one line, super concise, use markdown as necessary), show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers."
+        "prompt": "Extract the math questions from the text or file added. If image, OCR and gain information. For other file formats, proceed as necessary. Provide the answer to each question systematically along with work and steps. Format as such: If there is an identifier (ex. #1) for a question, use that before. Then, within 1-2 lines (no enters or new lines, keep everything just in one line, super concise, use markdown as necessary), show the steps to get to the answer, and then provide the answer bolded. Make sure these work for multiple choice, open-ended, and free-response question types. Make sure to use optimal accuracy and confirm all answers.",
+        "message_text": "**Active Command:** Math Answers", 
     },
     "/summarize": {
         "title": "/summarize",
         "description": "Provide a long set of notes/an article.",
-        "prompt": "Summarize the following notes or article into key points and brief 1-2 paragraph summary. Highlight the most important concepts and facts, focus on key definitions."
+        "prompt": "Summarize the following notes or article into key points and brief 1-2 paragraph summary. Highlight the most important concepts and facts, focus on key definitions.",
+        "message_text": "**Active Command:** Summary", 
     },
     "/check4grammar": {
         "title": "/check4grammar",
         "description": "Provide a set of text for grammar to be verified.",
-        "prompt": "Check the following text for grammatical errors and provide a bulleted list of corrections needed to fix. At the end, in a new line, provide the full text completed revised. Highligh the revised sections in bold."
+        "prompt": "Check the following text for grammatical errors and provide a bulleted list of corrections needed to fix. At the end, in a new line, provide the full text completed revised. Highligh the revised sections in bold.",
+        "message_text": "**Active Command:** Grammar Check", 
     },
     "/paraphrase": {
         "title": "/paraphrase",
         "description": "Provide a set of text to be paraphrased.",
-        "prompt": "Provide only a rephrased version of the text. Change wording, structure, and organization of the text provided. Change vocabulary as appropriate and confirm that the main messages are kept intact while wording and structure is edited."
+        "prompt": "Provide only a rephrased version of the text. Change wording, structure, and organization of the text provided. Change vocabulary as appropriate and confirm that the main messages are kept intact while wording and structure is edited.",
+        "message_text": "**Active Command:** Paraphraser", 
     },
     "/synonyms": {
         "title": "/synonyms",
         "description": "Provide a word to find synonyms.",
-        "prompt": "For the word provided below, provide a definition, examples, and also synonyms. Also provide 1-3 antonyms at the bottom."
+        "prompt": "For the word provided below, provide a definition, examples, and also synonyms. Also provide 1-3 antonyms at the bottom.",
+        "message_text": "**Active Command:** Synonyms", 
     },
     "/citation": {
         "title": "/citation",
         "description": "Paste any information for a source and what citation style you need.",
-        "prompt": "With the following information, format into a citation based on the citation style mentioned below. If there is no citation style, make it in multiple formats."
+        "prompt": "With the following information, format into a citation based on the citation style mentioned below. If there is no citation style, make it in multiple formats.",
+        "message_text": "**Active Command:** Citation Format", 
     },
     "/essayoutline": {
         "title": "/essayoutline",
         "description": "Paste a topic for an essay, as detailed as possible.",
-        "prompt": "Based on the following topic provided and details, create a 5-paragraph essay outline (unless otherwise mentioned below for changes in the numbers of paragraphs or format) which has an introduction, three body paragraphs, and a conclusion. It should be formatted very professionally with clear topics and correct grammar."
+        "prompt": "Based on the following topic provided and details, create a 5-paragraph essay outline (unless otherwise mentioned below for changes in the numbers of paragraphs or format) which has an introduction, three body paragraphs, and a conclusion. It should be formatted very professionally with clear topics and correct grammar.",
+        "message_text": "**Active Command:** Essay Outline Creation", 
     },
     "/litanalysis": {
         "title": "/litanalysis",
         "description": "Provide of piece of literature or an excerpt to be analyzed.",
-        "prompt": "Analyze the following text and provide detailed, comprehensive summaries and insights on characters, themes, main ideas or various sections, and symbolism used. Have a comprehensive view for a high school classroom-type insight for the literature provided."
+        "prompt": "Analyze the following text and provide detailed, comprehensive summaries and insights on characters, themes, main ideas or various sections, and symbolism used. Have a comprehensive view for a high school classroom-type insight for the literature provided.",
+        "message_text": "**Active Command:** Literature Analysis Tool", 
     },
     "/translation": {
         "title": "/translation",
         "description": "Provide a piece of text and what language the text is in and what is must be translated to.",
-        "prompt": "Based on the text below, translate it to the language provide based on what the text is in."
+        "prompt": "Based on the text below, translate it to the language provide based on what the text is in.",
+        "message_text": "**Active Command:** Translator", 
     },
     "/wordcount": {
         "title": "/wordcount",
         "description": "Provide a piece of text, an image, PDF file, or other file format.",
-        "prompt": "Based on the provided data in the files or text input, count the number of words in the submission and provide it back."
+        "prompt": "Based on the provided data in the files or text input, count the number of words in the submission and provide it back.",
+        "message_text": "**Active Command:** Word Counter", 
     }
     # Add more as needed
 }
@@ -563,18 +575,14 @@ def main():
     # Prebuilt Commands Section
     with st.sidebar:
         with st.expander("**Prebuilt Commands**", expanded=False):
-            # Initialize current_command in session state if not present
             if 'current_command' not in st.session_state:
                 st.session_state.current_command = None
                 
-            # Display current command status
             st.write("**Active:**", st.session_state.current_command if st.session_state.current_command else "None")
             
-            # Create buttons for each command
             for cmd, info in PREBUILT_COMMANDS.items():
                 col1, col2 = st.columns([4, 1])
                 
-                # Command button
                 with col1:
                     button_active = st.session_state.current_command == cmd
                     if st.button(
@@ -582,26 +590,22 @@ def main():
                         key=f"cmd_{cmd}",
                         type="primary" if button_active else "secondary"
                     ):
-                        # Toggle command state
                         if st.session_state.current_command == cmd:
                             st.session_state.current_command = None
                         else:
                             st.session_state.current_command = cmd
                         st.rerun()
                 
-                # Help button
                 with col2:
                     help_key = f"help_{cmd}"
                     if help_key not in st.session_state:
                         st.session_state[help_key] = False
                     
-                    # Toggle help display
                     button_text = "×" if st.session_state[help_key] else "?"
                     if st.button(button_text, key=f"help_btn_{cmd}"):
                         st.session_state[help_key] = not st.session_state[help_key]
                         st.rerun()
                 
-                # Display help text if enabled
                 if st.session_state[help_key]:
                     st.info(info["description"])
 
@@ -653,8 +657,14 @@ def main():
 
     if prompt:
         final_prompt = prompt
+        command_suffix = ""
+        command_message = ""
+        
         if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
-            command_prompt = PREBUILT_COMMANDS[st.session_state.current_command]["prompt"]
+            command = st.session_state.current_command
+            command_prompt = PREBUILT_COMMANDS[command]["prompt"]
+            command_suffix = f" **[{command}]**"
+            command_message = PREBUILT_COMMANDS[command].get("message_text", "")
             final_prompt = f"{command_prompt}\n{prompt}"
             st.session_state.current_command = None
 
@@ -675,14 +685,16 @@ def main():
 
         input_parts.append(final_prompt)
 
-        st.chat_message("user").markdown(prompt)
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").markdown(prompt + command_suffix)
+        st.session_state.messages.append({"role": "user", "content": prompt + command_suffix})
         
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             
             try:
                 response = st.session_state.chat_session.send_message(input_parts)
+                if command_message:
+                    message_placeholder.markdown(f" --- [{command_message}] --- ")
                 full_response = handle_chat_response(response, message_placeholder)
                 
                 st.session_state.messages.append({
