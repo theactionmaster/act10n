@@ -556,36 +556,49 @@ def main():
             audio_input = st.audio_input("Record your question")
 
     # Prebuilt Commands Section
-    with st.sidebar:
-        with st.expander("**Prebuilt Commands**", expanded=False):
-            current_command = None
-            if 'current_command' in st.session_state and st.session_state.current_command:
-                current_command = st.session_state.current_command
-                st.write(f"**Prebuilt Commands:** {current_command}")
-            else:
-                st.write("**Prebuilt Commands:** none")
-    
-            for cmd, info in PREBUILT_COMMANDS.items():
-                col1, col2 = st.columns([4, 1])
-                with col1:
-                    if st.button(info["title"], key=f"cmd_{cmd}"):
-                        if st.session_state.get('current_command') == cmd:
-                            st.session_state.current_command = None
-                        else:
-                            st.session_state.current_command = cmd
-                        current_command = st.session_state.current_command
-                with col2:
-                    help_key = f"help_{cmd}"
-                    if help_key not in st.session_state:
-                        st.session_state[help_key] = False
-                    
-                    button_text = "×" if st.session_state[help_key] else "?"
-                    if st.button(button_text, key=f"help_btn_{cmd}"):
-                        st.session_state[help_key] = not st.session_state[help_key]
-                        st.rerun()
-                        
-                if st.session_state[help_key]:
-                    st.info(info["description"])
+with st.sidebar:
+    with st.expander("**Prebuilt Commands**", expanded=False):
+        # Initialize current_command in session state if not present
+        if 'current_command' not in st.session_state:
+            st.session_state.current_command = None
+            
+        # Display current command status
+        st.write("**Active:**", st.session_state.current_command if st.session_state.current_command else "None")
+        
+        # Create buttons for each command
+        for cmd, info in PREBUILT_COMMANDS.items():
+            col1, col2 = st.columns([4, 1])
+            
+            # Command button
+            with col1:
+                button_active = st.session_state.current_command == cmd
+                if st.button(
+                    info["title"],
+                    key=f"cmd_{cmd}",
+                    type="primary" if button_active else "secondary"
+                ):
+                    # Toggle command state
+                    if st.session_state.current_command == cmd:
+                        st.session_state.current_command = None
+                    else:
+                        st.session_state.current_command = cmd
+                    st.rerun()
+            
+            # Help button
+            with col2:
+                help_key = f"help_{cmd}"
+                if help_key not in st.session_state:
+                    st.session_state[help_key] = False
+                
+                # Toggle help display
+                button_text = "×" if st.session_state[help_key] else "?"
+                if st.button(button_text, key=f"help_btn_{cmd}"):
+                    st.session_state[help_key] = not st.session_state[help_key]
+                    st.rerun()
+            
+            # Display help text if enabled
+            if st.session_state[help_key]:
+                st.info(info["description"])
 
     # Display messages
     for message in st.session_state.messages:
