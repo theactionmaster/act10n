@@ -694,7 +694,9 @@ def main():
             try:
                 response = st.session_state.chat_session.send_message(input_parts)
                 if command_message:
-                    message_placeholder.markdown(f" --- [{command_message}] --- ")
+                    full_response = f" --- [{command_message}] --- \n{response.text}"
+                else:
+                    full_response = response.text
                 full_response = handle_chat_response(response, message_placeholder)
                 
                 st.session_state.messages.append({
