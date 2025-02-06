@@ -522,6 +522,7 @@ def main():
     # File Upload Section
     with st.sidebar:
         with st.expander("**File Upload**", expanded=False):
+            st.markdown("**ALWAYS** upload one file at a time.")
             clipboard_file = handle_clipboard_data()
             if clipboard_file:
                 st.session_state.uploaded_files.append(clipboard_file)
