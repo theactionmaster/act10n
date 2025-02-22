@@ -489,14 +489,6 @@ def main():
     initialize_session_state()
 
     st.title("💬 Mainframe AI")
-    
-    INTERLINK_LOGO = "interlink_logo.png"
-
-    st.logo(
-        INTERLINK_LOGO,
-        size="large",
-        icon_image=INTERLINK_LOGO,
-    )
 
     # File Upload Section
     with st.sidebar:
