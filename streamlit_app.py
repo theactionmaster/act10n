@@ -24,7 +24,7 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 
 st.set_page_config(
-    page_title="Interlink AI",
+    page_title="Mainframe AI",
     page_icon="./favicon.ico",
     layout="wide"
 )
@@ -158,12 +158,7 @@ window.addEventListener('message', function(e) {
         }, '*');
     }
 });
-</script>
-<center>
-    <a href="https://interlinkcvhs.org/" class="back-button" target="_blank" rel="noopener noreferrer">
-        interlinkcvhs.org
-    </a>
-</center>""", unsafe_allow_html=True)
+</script>""", unsafe_allow_html=True)
 
 generation_config = {
     "temperature": 0,
@@ -174,28 +169,13 @@ generation_config = {
 }
 
 SYSTEM_INSTRUCTION = """
-Name: Your name is Interlink AI.
-Creator: You were developed by the Interlink team.
-Technology: You are powered by Google Gemini.
-Platform: You are hosted on the Interlink website.
-Website: https://interlinkcvhs.org/.
+Name: Your name is Mainframe AI.
+Technology: You are powered by Google Gemini..
 
 Behavioral Guidelines:
 Be helpful and professional, ensuring accuracy in every response.
-Avoid being overly promotional—mention Interlink's features only when relevant or when asked.
 Maintain a friendly, approachable tone while providing precise and concise answers.
 
-Interlink's Features for Carnegie Vanguard High School (CVHS) Freshmen:
-Customizable Scheduling Tool: Helps students manage assignments and stay organized. (https://interlinkcvhs.org/)
-Subject Notes: Comprehensive notes for a variety of subjects. (https://interlinkcvhs.org/subject-study)
-Question Bank (QBank): Hundreds of practice problems to help students prepare for tests. (https://interlinkcvhs.org/qbank)
-Quizlets: Study resources to aid in test preparation. (https://interlinkcvhs.org/quizlets)
-AP Human Geography Flashcards: Weekly terms and definitions tailored to the curriculum. (https://interlinkcvhs.org/extra/hug-vocab)
-Educational Podcasts: Learn on-the-go with study-focused audio content. (https://interlinkcvhs.org/extra/deepdives)
-Question of the Day (QOTD): A daily random question to reinforce key test topics. (https://interlinkcvhs.org/qotd)
-Productivity Tools: General tools to enhance efficiency and focus. (https://interlinkcvhs.org/extra/productivity)
-
-You can apply to contribute to Interlink at [https://interlinkcvhs.org/apply].
 """
 
 PREBUILT_COMMANDS = {
@@ -400,7 +380,7 @@ def initialize_session_state():
         st.session_state.chat_session = st.session_state.chat_model.start_chat(history=[])
 
     if 'messages' not in st.session_state:
-        initial_message = """Hello! I'm Interlink AI, your personal academic assistant for Carnegie Vanguard High School. How can I assist you today?"""
+        initial_message = """Hello! Mainframe AI speaking. How can I assist you today?"""
         st.session_state.messages = [
             {"role": "assistant", "content": initial_message}
         ]
