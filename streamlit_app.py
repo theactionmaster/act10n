@@ -200,7 +200,7 @@ PREBUILT_COMMANDS = {
     "/summarize": {
         "title": "/summarize",
         "description": "Provide a long set of notes/an article.",
-        "prompt": "Summarize the following notes or article into key points and brief 1-2 paragraph summary. Highlight the most important concepts and facts, focus on key definitions.",
+        "prompt": "Summarize the following notes or article into key points and brief 1-2 paragraph summary. Highlight the most important concepts and facts, focus on key definitions. Make sure it's in paragraph format.",
         "message_text": "**Active Command:** Summary", 
     },
     "/check4grammar": {
@@ -423,15 +423,24 @@ def save_audio_file(audio_data):
         tmpfile.write(audio_bytes)
         return tmpfile.name
 
-def handle_chat_response(response, message_placeholder):
+def handle_chat_response(response, message_placeholder, command_message=""):
     full_response = ""
+    
+    # First display command message if it exists
+    if command_message:
+        full_response = f"{command_message}\n\n"
+        message_placeholder.markdown(full_response)
+    
+    # Process and format the AI response
     formatted_response = process_response(response.text)
     
+    # Split into chunks for streaming effect
     chunks = []
     for line in formatted_response.split('\n'):
         chunks.extend(line.split(' '))
         chunks.append('\n')
     
+    # Stream the response chunks with typing effect
     for chunk in chunks:
         if chunk != '\n':
             full_response += chunk + ' '
@@ -440,6 +449,7 @@ def handle_chat_response(response, message_placeholder):
         time.sleep(0.02)
         message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
     
+    # Display final response without cursor
     message_placeholder.markdown(full_response, unsafe_allow_html=True)
     return full_response
 
@@ -665,11 +675,7 @@ def main():
             
             try:
                 response = st.session_state.chat_session.send_message(input_parts)
-                if command_message:
-                    full_response = f" --- [{command_message}] --- \n{response.text}"
-                else:
-                    full_response = response.text
-                full_response = handle_chat_response(response, message_placeholder)
+                full_response = handle_chat_response(response, message_placeholder, command_message)
                 
                 st.session_state.messages.append({
                     "role": "assistant", 
