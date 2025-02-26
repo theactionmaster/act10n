@@ -17,18 +17,64 @@ import xml.etree.ElementTree as ET
 from io import BytesIO
 import base64
 
+# Check for password in session state
+def check_password():
+    """Returns `True` if the user had the correct password."""
+    
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["password"] == st.secrets["PASSWORD"]:
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the password
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the password is validated
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show input for password
+    st.title("💬 Mainframe AI")
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        * {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### Please enter the password to access Mainframe AI")
+    
+    # Create password input field
+    st.text_input(
+        "Password", 
+        type="password", 
+        on_change=password_entered, 
+        key="password"
+    )
+    
+    if "password_correct" in st.session_state:
+        if not st.session_state["password_correct"]:
+            st.error("😕 Incorrect password. Please try again.")
+    
+    return False
+
+# Initialize Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("Missing GEMINI_API_KEY environment variable")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
+# Page configuration
 st.set_page_config(
     page_title="Mainframe AI",
     page_icon="./favicon.ico",
     layout="wide"
 )
 
+# Custom CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
@@ -496,6 +542,10 @@ def prepare_chat_input(prompt, files):
     return input_parts
 
 def main():
+    # Check password first
+    if not check_password():
+        return
+    
     initialize_session_state()
 
     st.title("💬 Mainframe AI")
