@@ -783,32 +783,32 @@ def main():
 
     # Sign Out Button and Settings
     with st.sidebar:
-    with st.expander("**Settings & Preferences**", expanded=False):
-        # Font selection
-        available_fonts = [
-            "Montserrat", "Orbitron", "DM Sans", "Calibri", 
-            "Arial", "Times New Roman", "Roboto", "Open Sans",
-            "Lato", "Poppins", "Ubuntu", "Playfair Display"
-        ]
-        
-        # Font search/filter
-        font_search = st.text_input("Search Fonts", key="font_search")
-        filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
-        
-        font_family = st.selectbox(
-            "Font Family",
-            filtered_fonts,
-            index=filtered_fonts.index(st.session_state.font_preferences["font_family"]) if st.session_state.font_preferences["font_family"] in filtered_fonts else 0,
-            key="font_family_select"
-        )
-        
-        # Apply button
-        if st.button("Apply Font", key="apply_font"):
-            st.session_state.font_preferences = {
-                "font_family": font_family
-            }
-            save_font_preferences()
-            st.rerun()
+        with st.expander("**Settings & Preferences**", expanded=False):
+            # Font selection
+            available_fonts = [
+                "Montserrat", "Orbitron", "DM Sans", "Calibri", 
+                "Arial", "Times New Roman", "Roboto", "Open Sans",
+                "Lato", "Poppins", "Ubuntu", "Playfair Display"
+            ]
+            
+            # Font search/filter
+            font_search = st.text_input("Search Fonts", key="font_search")
+            filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
+            
+            font_family = st.selectbox(
+                "Font Family",
+                filtered_fonts,
+                index=filtered_fonts.index(st.session_state.font_preferences["font_family"]) if st.session_state.font_preferences["font_family"] in filtered_fonts else 0,
+                key="font_family_select"
+            )
+            
+            # Apply button
+            if st.button("Apply Font", key="apply_font"):
+                st.session_state.font_preferences = {
+                    "font_family": font_family
+                }
+                save_font_preferences()
+                st.rerun()
 
     # File Upload Section
     with st.sidebar:
