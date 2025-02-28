@@ -129,6 +129,9 @@ def check_password():
     return False
 
 def initialize_font_preferences():
+    if 'text_size' not in st.session_state.font_preferences:
+        st.session_state.font_preferences['text_size'] = 'medium'
+    
     if 'font_preferences' not in st.session_state:
         # Try to load from local storage
         placeholder_div = st.empty()
@@ -187,6 +190,17 @@ def save_font_preferences():
 
 def apply_font_preferences():
     font_family = st.session_state.font_preferences.get("font_family", "Montserrat")
+    text_size = st.session_state.font_preferences.get("text_size", "medium")
+    
+    # Map text size names to actual CSS values
+    size_map = {
+        "small": "0.9rem",
+        "medium": "1rem",
+        "large": "1.2rem",
+        "x-large": "1.4rem"
+    }
+    
+    font_size = size_map[text_size]
     
     # Apply CSS based on preferences
     st.markdown(f"""
@@ -195,6 +209,7 @@ def apply_font_preferences():
         
         * {{
             font-family: '{font_family}', sans-serif !important;
+            font-size: {font_size} !important;
         }}
         
         .stMarkdown, .stText, .stTitle, .stHeader {{
@@ -212,8 +227,22 @@ def apply_font_preferences():
         .stSelectbox select {{
             font-family: '{font_family}', sans-serif !important;
         }}
+        
+        /* Adjust heading sizes proportionally */
+        h1 {{
+            font-size: calc({font_size} * 2.0) !important;
+        }}
+        
+        h2 {{
+            font-size: calc({font_size} * 1.5) !important;
+        }}
+        
+        h3 {{
+            font-size: calc({font_size} * 1.3) !important;
+        }}
     </style>
     """, unsafe_allow_html=True)
+
 
 def initialize_custom_commands():
     if 'custom_commands' not in st.session_state:
@@ -802,10 +831,17 @@ def main():
                 key="font_family_select"
             )
             
-            # Apply button
-            if st.button("Apply Font", key="apply_font"):
+            text_size = st.selectbox(
+                "Text Size",
+                ["Small", "Medium", "Large", "X-Large"],
+                index=["small", "medium", "large", "x-large"].index(st.session_state.font_preferences.get("text_size", "medium")),
+                key="text_size_select"
+            )
+            
+            if st.button("Apply Font Settings"):
                 st.session_state.font_preferences = {
-                    "font_family": font_family
+                    "font_family": font_family,
+                    "text_size": text_size.lower()
                 }
                 save_font_preferences()
                 st.rerun()
