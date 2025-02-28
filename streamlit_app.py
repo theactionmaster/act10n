@@ -130,9 +130,6 @@ def check_password():
     return False
 
 def initialize_font_preferences():
-    if 'text_size' not in st.session_state.font_preferences:
-        st.session_state.font_preferences['text_size'] = 'medium'
-    
     if 'font_preferences' not in st.session_state:
         # Try to load from local storage
         placeholder_div = st.empty()
@@ -146,7 +143,8 @@ def initialize_font_preferences():
                     prefDiv.innerText = savedPrefs;
                 } else {
                     prefDiv.innerText = JSON.stringify({
-                        font_family: "Montserrat"
+                        font_family: "Montserrat",
+                        text_size: "medium"
                     });
                 }
                 setTimeout(() => {
@@ -170,12 +168,14 @@ def initialize_font_preferences():
             except:
                 # Default preferences if loading fails
                 st.session_state.font_preferences = {
-                    "font_family": "Montserrat"
+                    "font_family": "Montserrat",
+                    "text_size": "medium"
                 }
         else:
             # Default preferences
             st.session_state.font_preferences = {
-                "font_family": "Montserrat"
+                "font_family": "Montserrat",
+                "text_size": "medium"
             }
 
 def save_font_preferences():
