@@ -16,15 +16,93 @@ import json
 import xml.etree.ElementTree as ET
 from io import BytesIO
 import base64
+from datetime import datetime, timedelta
 
-# Check for password in session state
+# Check for password in session state and persistent login
+def get_persistent_login():
+    if 'persistent_login' in st.session_state:
+        return st.session_state.persistent_login
+    
+    # Try to load from local storage
+    placeholder_div = st.empty()
+    placeholder_div.markdown(
+        """
+        <div id="check_persistent_login" style="display:none;"></div>
+        <script>
+            const checkLogin = document.getElementById('check_persistent_login');
+            const loginData = localStorage.getItem('mainframe_ai_login');
+            if (loginData) {
+                const loginInfo = JSON.parse(loginData);
+                if (loginInfo && loginInfo.expiry && new Date(loginInfo.expiry) > new Date()) {
+                    checkLogin.innerText = 'true';
+                } else {
+                    localStorage.removeItem('mainframe_ai_login');
+                    checkLogin.innerText = 'false';
+                }
+            } else {
+                checkLogin.innerText = 'false';
+            }
+            setTimeout(() => {
+                window.parent.postMessage({
+                    type: 'streamlit:setComponentValue',
+                    value: checkLogin.innerText === 'true',
+                    dataType: 'bool',
+                    key: 'persistent_login_check'
+                }, '*');
+            }, 100);
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Wait for the JavaScript to set the value
+    if 'persistent_login_check' in st.session_state:
+        placeholder_div.empty()
+        st.session_state.persistent_login = st.session_state.persistent_login_check
+        return st.session_state.persistent_login
+    
+    return False
+
+def set_persistent_login():
+    # Set expiry to 30 days from now
+    expiry = (datetime.now() + timedelta(days=30)).isoformat()
+    
+    st.markdown(
+        f"""
+        <script>
+            localStorage.setItem('mainframe_ai_login', JSON.stringify({{
+                expiry: '{expiry}'
+            }}));
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+    st.session_state.persistent_login = True
+
+def clear_persistent_login():
+    st.markdown(
+        """
+        <script>
+            localStorage.removeItem('mainframe_ai_login');
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+    st.session_state.persistent_login = False
+
 def check_password():
-    """Returns `True` if the user had the correct password."""
+    """Returns `True` if the user had the correct password or persistent login."""
+    
+    # Check for persistent login first
+    if get_persistent_login():
+        return True
     
     def password_entered():
         """Checks whether a password entered by the user is correct."""
         if st.session_state["password"] == st.secrets["PASSWORD"]:
             st.session_state["password_correct"] = True
+            if st.session_state.get("remember_me", False):
+                set_persistent_login()
             del st.session_state["password"]  # Don't store the password
         else:
             st.session_state["password_correct"] = False
@@ -54,11 +132,167 @@ def check_password():
         key="password"
     )
     
+    # Add remember me checkbox
+    st.checkbox("Remember me on this device", key="remember_me")
+    
     if "password_correct" in st.session_state:
         if not st.session_state["password_correct"]:
             st.error("😕 Incorrect password. Please try again.")
     
     return False
+
+# Initialize preferences and custom commands functions
+def initialize_preferences():
+    if 'user_preferences' not in st.session_state:
+        # Try to load from local storage
+        placeholder_div = st.empty()
+        placeholder_div.markdown(
+            """
+            <div id="load_preferences" style="display:none;"></div>
+            <script>
+                const prefDiv = document.getElementById('load_preferences');
+                const savedPrefs = localStorage.getItem('mainframe_ai_preferences');
+                if (savedPrefs) {
+                    prefDiv.innerText = savedPrefs;
+                } else {
+                    prefDiv.innerText = JSON.stringify({
+                        bg_color: "#0e1117",
+                        text_color: "#ffffff",
+                        font_family: "Montserrat"
+                    });
+                }
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        value: prefDiv.innerText,
+                        dataType: 'string',
+                        key: 'loaded_preferences'
+                    }, '*');
+                }, 100);
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Wait for the JavaScript to set the value
+        if 'loaded_preferences' in st.session_state:
+            placeholder_div.empty()
+            try:
+                st.session_state.user_preferences = json.loads(st.session_state.loaded_preferences)
+            except:
+                # Default preferences if loading fails
+                st.session_state.user_preferences = {
+                    "bg_color": "#0e1117",
+                    "text_color": "#ffffff",
+                    "font_family": "Montserrat"
+                }
+        else:
+            # Default preferences
+            st.session_state.user_preferences = {
+                "bg_color": "#0e1117",
+                "text_color": "#ffffff",
+                "font_family": "Montserrat"
+            }
+
+def save_preferences():
+    prefs_json = json.dumps(st.session_state.user_preferences)
+    st.markdown(
+        f"""
+        <script>
+            localStorage.setItem('mainframe_ai_preferences', '{prefs_json}');
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+def initialize_custom_commands():
+    if 'custom_commands' not in st.session_state:
+        # Try to load from local storage
+        placeholder_div = st.empty()
+        placeholder_div.markdown(
+            """
+            <div id="load_commands" style="display:none;"></div>
+            <script>
+                const cmdDiv = document.getElementById('load_commands');
+                const savedCmds = localStorage.getItem('mainframe_ai_custom_commands');
+                if (savedCmds) {
+                    cmdDiv.innerText = savedCmds;
+                } else {
+                    cmdDiv.innerText = JSON.stringify({});
+                }
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        value: cmdDiv.innerText,
+                        dataType: 'string',
+                        key: 'loaded_commands'
+                    }, '*');
+                }, 100);
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Wait for the JavaScript to set the value
+        if 'loaded_commands' in st.session_state:
+            placeholder_div.empty()
+            try:
+                st.session_state.custom_commands = json.loads(st.session_state.loaded_commands)
+            except:
+                st.session_state.custom_commands = {}
+        else:
+            st.session_state.custom_commands = {}
+
+def save_custom_commands():
+    cmds_json = json.dumps(st.session_state.custom_commands)
+    st.markdown(
+        f"""
+        <script>
+            localStorage.setItem('mainframe_ai_custom_commands', '{cmds_json}');
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+def apply_preferences():
+    prefs = st.session_state.user_preferences
+    
+    # Apply CSS based on preferences
+    st.markdown(f"""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family={prefs['font_family'].replace(' ', '+')}:wght@300;400;500;600;700&display=swap');
+        
+        body {{
+            background-color: {prefs['bg_color']};
+            color: {prefs['text_color']};
+        }}
+        
+        * {{
+            font-family: '{prefs['font_family']}', sans-serif !important;
+        }}
+        
+        .stApp {{
+            background-color: {prefs['bg_color']};
+        }}
+        
+        .stMarkdown, .stText, .stTitle, .stHeader {{
+            color: {prefs['text_color']};
+            font-family: '{prefs['font_family']}', sans-serif !important;
+        }}
+        
+        .stButton button {{
+            font-family: '{prefs['font_family']}', sans-serif !important;
+        }}
+        
+        .stTextInput input {{
+            font-family: '{prefs['font_family']}', sans-serif !important;
+        }}
+        
+        .stSelectbox select {{
+            font-family: '{prefs['font_family']}', sans-serif !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # Initialize Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -216,7 +450,7 @@ generation_config = {
 
 SYSTEM_INSTRUCTION = """
 Name: Your name is Mainframe AI.
-Technology: You are powered by Google Gemini..
+Technology: You are powered by Google Gemini.
 
 Behavioral Guidelines:
 Be helpful and professional, ensuring accuracy in every response.
@@ -308,11 +542,22 @@ PREBUILT_COMMANDS = {
 
 def extract_pdf_text(file):
     try:
-        pdf = PdfReader(file)
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text()
-        return text
+        # Try using PyMuPDF (fitz) first for better PDF extraction
+        try:
+            pdf_document = fitz.open(stream=file.read(), filetype="pdf")
+            text = ""
+            for page_num in range(len(pdf_document)):
+                page = pdf_document[page_num]
+                text += page.get_text()
+            return text
+        except:
+            # Fall back to PyPDF2 if PyMuPDF fails
+            file.seek(0)  # Reset file pointer
+            pdf = PdfReader(file)
+            text = ""
+            for page in pdf.pages:
+                text += page.extract_text()
+            return text
     except Exception as e:
         return f"Error extracting PDF text: {str(e)}"
 
@@ -419,7 +664,7 @@ def detect_file_type(uploaded_file):
     
     mime_type, _ = mimetypes.guess_type(filename)
     return mime_type or 'application/octet-stream'
-
+    
 def initialize_session_state():
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
@@ -451,8 +696,20 @@ def initialize_session_state():
 
     if 'clipboard_data' not in st.session_state:
         st.session_state.clipboard_data = None
+        
     if 'file_upload_expanded' not in st.session_state:
         st.session_state.file_upload_expanded = False
+        
+    # Initialize preferences and custom commands
+    initialize_preferences()
+    initialize_custom_commands()
+    
+    # Apply user preferences
+    apply_preferences()
+    
+    # For custom command form
+    if 'show_custom_cmd_form' not in st.session_state:
+        st.session_state.show_custom_cmd_form = False
 
 def get_audio_hash(audio_data):
     return hashlib.md5(audio_data.getvalue()).hexdigest()
@@ -504,7 +761,7 @@ def handle_chat_response(response, message_placeholder, command_message=""):
     # Display final response without cursor
     message_placeholder.markdown(full_response, unsafe_allow_html=True)
     return full_response
-
+    
 def show_file_preview(uploaded_file):
     mime_type = detect_file_type(uploaded_file)
     
@@ -555,6 +812,56 @@ def main():
     initialize_session_state()
 
     st.title("💬 Mainframe AI")
+
+    # Sign Out Button and Settings
+    with st.sidebar:
+        if st.button("Sign Out", key="sign_out_button", type="primary"):
+            clear_persistent_login()
+            st.session_state.password_correct = False
+            st.rerun()
+            
+        with st.expander("**Settings & Preferences**", expanded=False):
+            # Background color
+            bg_color = st.color_picker(
+                "Background Color", 
+                st.session_state.user_preferences["bg_color"],
+                key="bg_color_picker"
+            )
+            
+            # Text color
+            text_color = st.color_picker(
+                "Text Color", 
+                st.session_state.user_preferences["text_color"],
+                key="text_color_picker"
+            )
+            
+            # Font selection
+            available_fonts = [
+                "Montserrat", "Orbitron", "DM Sans", "Calibri", 
+                "Arial", "Times New Roman", "Roboto", "Open Sans",
+                "Lato", "Poppins", "Ubuntu", "Playfair Display"
+            ]
+            
+            # Font search/filter
+            font_search = st.text_input("Search Fonts", key="font_search")
+            filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
+            
+            font_family = st.selectbox(
+                "Font Family",
+                filtered_fonts,
+                index=filtered_fonts.index(st.session_state.user_preferences["font_family"]) if st.session_state.user_preferences["font_family"] in filtered_fonts else 0,
+                key="font_family_select"
+            )
+            
+            # Apply button
+            if st.button("Apply Settings", key="apply_settings"):
+                st.session_state.user_preferences = {
+                    "bg_color": bg_color,
+                    "text_color": text_color,
+                    "font_family": font_family
+                }
+                save_preferences()
+                st.rerun()
 
     # File Upload Section
     with st.sidebar:
@@ -646,6 +953,85 @@ def main():
                 
                 if st.session_state[help_key]:
                     st.info(info["description"])
+            
+            # Custom Commands Section
+            st.markdown("**Custom**")
+            
+            # Display existing custom commands
+            for cmd, info in st.session_state.custom_commands.items():
+                col1, col2 = st.columns([4, 1])
+                
+                with col1:
+                    button_active = st.session_state.current_command == cmd
+                    if st.button(
+                        info["title"],
+                        key=f"custom_cmd_{cmd}",
+                        type="primary" if button_active else "secondary"
+                    ):
+                        if st.session_state.current_command == cmd:
+                            st.session_state.current_command = None
+                        else:
+                            st.session_state.current_command = cmd
+                        st.rerun()
+                
+                with col2:
+                    help_key = f"help_custom_{cmd}"
+                    if help_key not in st.session_state:
+                        st.session_state[help_key] = False
+                    
+                    button_text = "×" if st.session_state[help_key] else "?"
+                    if st.button(button_text, key=f"help_btn_custom_{cmd}"):
+                        st.session_state[help_key] = not st.session_state[help_key]
+                        st.rerun()
+                
+                if st.session_state[help_key]:
+                    st.info(info["description"])
+            
+            # Add new custom command button
+            if st.button("+ Add Custom Command", key="add_custom_cmd"):
+                st.session_state.show_custom_cmd_form = True
+                st.rerun()
+            
+            # Custom command form
+            if st.session_state.get("show_custom_cmd_form", False):
+                with st.form("custom_command_form"):
+                    st.subheader("Create Custom Command")
+                    
+                    cmd_name = st.text_input("Command (with /)", key="new_cmd_name")
+                    cmd_title = st.text_input("Title", key="new_cmd_title")
+                    cmd_desc = st.text_area("Description", key="new_cmd_desc")
+                    cmd_prompt = st.text_area("AI Prompt", key="new_cmd_prompt")
+                    cmd_message = st.text_input("Display Title", key="new_cmd_message")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        submit = st.form_submit_button("Save Command")
+                    with col2:
+                        cancel = st.form_submit_button("Cancel")
+                    
+                    if submit and cmd_name and cmd_title and cmd_desc and cmd_prompt:
+                        # Ensure command starts with /
+                        if not cmd_name.startswith("/"):
+                            cmd_name = "/" + cmd_name
+                        
+                        # Add to custom commands
+                        st.session_state.custom_commands[cmd_name] = {
+                            "title": cmd_title,
+                            "description": cmd_desc,
+                            "prompt": cmd_prompt,
+                            "message_text": f" ----- **Active Command (Custom):** {cmd_message} ----- "
+                        }
+                        
+                        # Save to local storage
+                        save_custom_commands()
+                        
+                        # Close form
+                        st.session_state.show_custom_cmd_form = False
+                        st.rerun()
+                    
+                    if cancel:
+                        st.session_state.show_custom_cmd_form = False
+                        st.rerun()
 
     # Display messages
     for message in st.session_state.messages:
@@ -700,9 +1086,17 @@ def main():
         
         if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
             command = st.session_state.current_command
-            command_prompt = PREBUILT_COMMANDS[command]["prompt"]
-            command_suffix = f" **[{command}]**"
-            command_message = PREBUILT_COMMANDS[command].get("message_text", "")
+            
+            # Check if it's a built-in command or custom command
+            if command in PREBUILT_COMMANDS:
+                command_prompt = PREBUILT_COMMANDS[command]["prompt"]
+                command_suffix = f" **[{command}]**"
+                command_message = PREBUILT_COMMANDS[command].get("message_text", "")
+            elif command in st.session_state.custom_commands:
+                command_prompt = st.session_state.custom_commands[command]["prompt"]
+                command_suffix = f" **[{command}]**"
+                command_message = st.session_state.custom_commands[command].get("message_text", "")
+            
             final_prompt = f"{command_prompt}\n{prompt}"
             st.session_state.current_command = None
 
