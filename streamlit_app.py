@@ -91,18 +91,16 @@ def clear_persistent_login():
     st.session_state.persistent_login = False
 
 def check_password():
-    """Returns `True` if the user had the correct password or persistent login."""
+    """Returns `True` if the user had the correct password."""
     
-    # Check for persistent login first
-    if get_persistent_login():
-        return True
+    # Initialize and apply font preferences first
+    initialize_font_preferences()
+    apply_font_preferences()
     
     def password_entered():
         """Checks whether a password entered by the user is correct."""
         if st.session_state["password"] == st.secrets["PASSWORD"]:
             st.session_state["password_correct"] = True
-            if st.session_state.get("remember_me", False):
-                set_persistent_login()
             del st.session_state["password"]  # Don't store the password
         else:
             st.session_state["password_correct"] = False
@@ -113,14 +111,6 @@ def check_password():
 
     # Show input for password
     st.title("💬 Mainframe AI")
-    st.markdown("""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-        * {
-            font-family: 'Montserrat', sans-serif !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
     
     st.markdown("### Please enter the password to access Mainframe AI")
     
@@ -132,32 +122,26 @@ def check_password():
         key="password"
     )
     
-    # Add remember me checkbox
-    st.checkbox("Remember me on this device", key="remember_me")
-    
     if "password_correct" in st.session_state:
         if not st.session_state["password_correct"]:
             st.error("😕 Incorrect password. Please try again.")
     
     return False
 
-# Initialize preferences and custom commands functions
-def initialize_preferences():
-    if 'user_preferences' not in st.session_state:
+def initialize_font_preferences():
+    if 'font_preferences' not in st.session_state:
         # Try to load from local storage
         placeholder_div = st.empty()
         placeholder_div.markdown(
             """
-            <div id="load_preferences" style="display:none;"></div>
+            <div id="load_font_preferences" style="display:none;"></div>
             <script>
-                const prefDiv = document.getElementById('load_preferences');
-                const savedPrefs = localStorage.getItem('mainframe_ai_preferences');
+                const prefDiv = document.getElementById('load_font_preferences');
+                const savedPrefs = localStorage.getItem('mainframe_ai_font');
                 if (savedPrefs) {
                     prefDiv.innerText = savedPrefs;
                 } else {
                     prefDiv.innerText = JSON.stringify({
-                        bg_color: "#0e1117",
-                        text_color: "#ffffff",
                         font_family: "Montserrat"
                     });
                 }
@@ -166,7 +150,7 @@ def initialize_preferences():
                         type: 'streamlit:setComponentValue',
                         value: prefDiv.innerText,
                         dataType: 'string',
-                        key: 'loaded_preferences'
+                        key: 'loaded_font_preferences'
                     }, '*');
                 }, 100);
             </script>
@@ -175,35 +159,61 @@ def initialize_preferences():
         )
         
         # Wait for the JavaScript to set the value
-        if 'loaded_preferences' in st.session_state:
+        if 'loaded_font_preferences' in st.session_state:
             placeholder_div.empty()
             try:
-                st.session_state.user_preferences = json.loads(st.session_state.loaded_preferences)
+                st.session_state.font_preferences = json.loads(st.session_state.loaded_font_preferences)
             except:
                 # Default preferences if loading fails
-                st.session_state.user_preferences = {
-                    "bg_color": "#0e1117",
-                    "text_color": "#ffffff",
+                st.session_state.font_preferences = {
                     "font_family": "Montserrat"
                 }
         else:
             # Default preferences
-            st.session_state.user_preferences = {
-                "bg_color": "#0e1117",
-                "text_color": "#ffffff",
+            st.session_state.font_preferences = {
                 "font_family": "Montserrat"
             }
 
-def save_preferences():
-    prefs_json = json.dumps(st.session_state.user_preferences)
+def save_font_preferences():
+    prefs_json = json.dumps(st.session_state.font_preferences)
     st.markdown(
         f"""
         <script>
-            localStorage.setItem('mainframe_ai_preferences', '{prefs_json}');
+            localStorage.setItem('mainframe_ai_font', '{prefs_json}');
         </script>
         """,
         unsafe_allow_html=True
     )
+
+def apply_font_preferences():
+    font_family = st.session_state.font_preferences.get("font_family", "Montserrat")
+    
+    # Apply CSS based on preferences
+    st.markdown(f"""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family={font_family.replace(' ', '+')}:wght@300;400;500;600;700&display=swap');
+        
+        * {{
+            font-family: '{font_family}', sans-serif !important;
+        }}
+        
+        .stMarkdown, .stText, .stTitle, .stHeader {{
+            font-family: '{font_family}', sans-serif !important;
+        }}
+        
+        .stButton button {{
+            font-family: '{font_family}', sans-serif !important;
+        }}
+        
+        .stTextInput input {{
+            font-family: '{font_family}', sans-serif !important;
+        }}
+        
+        .stSelectbox select {{
+            font-family: '{font_family}', sans-serif !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 def initialize_custom_commands():
     if 'custom_commands' not in st.session_state:
@@ -253,46 +263,6 @@ def save_custom_commands():
         """,
         unsafe_allow_html=True
     )
-
-def apply_preferences():
-    prefs = st.session_state.user_preferences
-    
-    # Apply CSS based on preferences
-    st.markdown(f"""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family={prefs['font_family'].replace(' ', '+')}:wght@300;400;500;600;700&display=swap');
-        
-        body {{
-            background-color: {prefs['bg_color']};
-            color: {prefs['text_color']};
-        }}
-        
-        * {{
-            font-family: '{prefs['font_family']}', sans-serif !important;
-        }}
-        
-        .stApp {{
-            background-color: {prefs['bg_color']};
-        }}
-        
-        .stMarkdown, .stText, .stTitle, .stHeader {{
-            color: {prefs['text_color']};
-            font-family: '{prefs['font_family']}', sans-serif !important;
-        }}
-        
-        .stButton button {{
-            font-family: '{prefs['font_family']}', sans-serif !important;
-        }}
-        
-        .stTextInput input {{
-            font-family: '{prefs['font_family']}', sans-serif !important;
-        }}
-        
-        .stSelectbox select {{
-            font-family: '{prefs['font_family']}', sans-serif !important;
-        }}
-    </style>
-    """, unsafe_allow_html=True)
 
 # Initialize Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -666,6 +636,10 @@ def detect_file_type(uploaded_file):
     return mime_type or 'application/octet-stream'
     
 def initialize_session_state():
+    # Initialize font preferences
+    initialize_font_preferences()
+    apply_font_preferences()
+    
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
@@ -699,13 +673,7 @@ def initialize_session_state():
         
     if 'file_upload_expanded' not in st.session_state:
         st.session_state.file_upload_expanded = False
-        
-    # Initialize preferences and custom commands
-    initialize_preferences()
     initialize_custom_commands()
-    
-    # Apply user preferences
-    apply_preferences()
     
     # For custom command form
     if 'show_custom_cmd_form' not in st.session_state:
@@ -815,53 +783,32 @@ def main():
 
     # Sign Out Button and Settings
     with st.sidebar:
-        if st.button("Sign Out", key="sign_out_button", type="primary"):
-            clear_persistent_login()
-            st.session_state.password_correct = False
+    with st.expander("**Settings & Preferences**", expanded=False):
+        # Font selection
+        available_fonts = [
+            "Montserrat", "Orbitron", "DM Sans", "Calibri", 
+            "Arial", "Times New Roman", "Roboto", "Open Sans",
+            "Lato", "Poppins", "Ubuntu", "Playfair Display"
+        ]
+        
+        # Font search/filter
+        font_search = st.text_input("Search Fonts", key="font_search")
+        filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
+        
+        font_family = st.selectbox(
+            "Font Family",
+            filtered_fonts,
+            index=filtered_fonts.index(st.session_state.font_preferences["font_family"]) if st.session_state.font_preferences["font_family"] in filtered_fonts else 0,
+            key="font_family_select"
+        )
+        
+        # Apply button
+        if st.button("Apply Font", key="apply_font"):
+            st.session_state.font_preferences = {
+                "font_family": font_family
+            }
+            save_font_preferences()
             st.rerun()
-            
-        with st.expander("**Settings & Preferences**", expanded=False):
-            # Background color
-            bg_color = st.color_picker(
-                "Background Color", 
-                st.session_state.user_preferences["bg_color"],
-                key="bg_color_picker"
-            )
-            
-            # Text color
-            text_color = st.color_picker(
-                "Text Color", 
-                st.session_state.user_preferences["text_color"],
-                key="text_color_picker"
-            )
-            
-            # Font selection
-            available_fonts = [
-                "Montserrat", "Orbitron", "DM Sans", "Calibri", 
-                "Arial", "Times New Roman", "Roboto", "Open Sans",
-                "Lato", "Poppins", "Ubuntu", "Playfair Display"
-            ]
-            
-            # Font search/filter
-            font_search = st.text_input("Search Fonts", key="font_search")
-            filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
-            
-            font_family = st.selectbox(
-                "Font Family",
-                filtered_fonts,
-                index=filtered_fonts.index(st.session_state.user_preferences["font_family"]) if st.session_state.user_preferences["font_family"] in filtered_fonts else 0,
-                key="font_family_select"
-            )
-            
-            # Apply button
-            if st.button("Apply Settings", key="apply_settings"):
-                st.session_state.user_preferences = {
-                    "bg_color": bg_color,
-                    "text_color": text_color,
-                    "font_family": font_family
-                }
-                save_preferences()
-                st.rerun()
 
     # File Upload Section
     with st.sidebar:
