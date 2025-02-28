@@ -96,6 +96,7 @@ def check_password():
     # Initialize and apply font preferences first
     initialize_font_preferences()
     apply_font_preferences()
+    apply_accessibility_settings()
     
     def password_entered():
         """Checks whether a password entered by the user is correct."""
@@ -627,6 +628,100 @@ def handle_clipboard_data():
             st.session_state.clipboard_data = None
     return None
 
+def save_accessibility_preferences():
+    prefs_json = json.dumps(st.session_state.accessibility)
+    st.markdown(
+        f"""
+        <script>
+            localStorage.setItem('mainframe_ai_accessibility', '{prefs_json}');
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+def apply_accessibility_settings():
+    if 'accessibility' not in st.session_state:
+        # Try to load from local storage
+        placeholder_div = st.empty()
+        placeholder_div.markdown(
+            """
+            <div id="load_accessibility" style="display:none;"></div>
+            <script>
+                const accDiv = document.getElementById('load_accessibility');
+                const savedPrefs = localStorage.getItem('mainframe_ai_accessibility');
+                if (savedPrefs) {
+                    accDiv.innerText = savedPrefs;
+                } else {
+                    accDiv.innerText = JSON.stringify({
+                        high_contrast: false,
+                        reduce_motion: false
+                    });
+                }
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        value: accDiv.innerText,
+                        dataType: 'string',
+                        key: 'loaded_accessibility'
+                    }, '*');
+                }, 100);
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Wait for the JavaScript to set the value
+        if 'loaded_accessibility' in st.session_state:
+            placeholder_div.empty()
+            try:
+                st.session_state.accessibility = json.loads(st.session_state.loaded_accessibility)
+            except:
+                # Default preferences if loading fails
+                st.session_state.accessibility = {
+                    "high_contrast": False,
+                    "reduce_motion": False
+                }
+        else:
+            # Default preferences
+            st.session_state.accessibility = {
+                "high_contrast": False,
+                "reduce_motion": False
+            }
+    
+    # Apply accessibility settings
+    high_contrast = st.session_state.accessibility.get('high_contrast', False)
+    reduce_motion = st.session_state.accessibility.get('reduce_motion', False)
+    
+    css = []
+    
+    if high_contrast:
+        css.append("""
+        * {
+            color: white !important;
+            background-color: black !important;
+        }
+        a, button, .stButton button {
+            color: yellow !important;
+            border-color: yellow !important;
+        }
+        .stTextInput input, .stSelectbox select {
+            color: white !important;
+            background-color: #333 !important;
+            border: 2px solid yellow !important;
+        }
+        """)
+    
+    if reduce_motion:
+        css.append("""
+        * {
+            animation: none !important;
+            transition: none !important;
+        }
+        """)
+    
+    if css:
+        st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
+
 def detect_file_type(uploaded_file):
     filename = uploaded_file.name
     file_ext = os.path.splitext(filename)[1].lower()
@@ -668,6 +763,7 @@ def initialize_session_state():
     # Initialize font preferences
     initialize_font_preferences()
     apply_font_preferences()
+    apply_accessibility_settings()
     
     if 'chat_model' not in st.session_state:
         st.session_state.chat_model = genai.GenerativeModel(
@@ -838,12 +934,48 @@ def main():
                 key="text_size_select"
             )
             
-            if st.button("Apply Font Settings"):
+            # Font selection and application button
+            if st.button("Apply Font", key="apply_font"):
                 st.session_state.font_preferences = {
-                    "font_family": font_family,
-                    "text_size": text_size.lower()
+                    "font_family": font_family
                 }
                 save_font_preferences()
+                st.rerun()
+            
+            # Add accessibility options directly (not in another expander)
+            st.markdown("---")
+            st.markdown("**Accessibility Options**")
+            
+            # Initialize accessibility state if needed
+            if 'accessibility' not in st.session_state:
+                st.session_state.accessibility = {
+                    'high_contrast': False,
+                    'reduce_motion': False
+                }
+            
+            # High contrast mode
+            high_contrast = st.checkbox(
+                "High Contrast Mode", 
+                value=st.session_state.accessibility.get('high_contrast', False),
+                key="high_contrast",
+                help="Increases color contrast for better visibility"
+            )
+            
+            # Reduce motion
+            reduce_motion = st.checkbox(
+                "Reduce Motion", 
+                value=st.session_state.accessibility.get('reduce_motion', False),
+                key="reduce_motion",
+                help="Reduces animations and transitions"
+            )
+            
+            # Apply settings button
+            if st.button("Apply Settings", key="apply_accessibility"):
+                st.session_state.accessibility = {
+                    'high_contrast': high_contrast,
+                    'reduce_motion': reduce_motion
+                }
+                save_accessibility_preferences()
                 st.rerun()
 
     # File Upload Section
