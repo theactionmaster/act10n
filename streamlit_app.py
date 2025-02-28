@@ -296,6 +296,12 @@ PREBUILT_COMMANDS = {
         "description": "Provide a piece of text, an image, PDF file, or other file format.",
         "prompt": "Based on the provided data in the files or text input, count the number of words in the submission and provide it back. Do not include this prompt portion. Only include the words after this. Also don't include the [/command] section as well. Only the part after this.",
         "message_text": " ----- **Active Command:** Word Counter ----- ", 
+    },
+    "/code": {
+        "title": "/code",
+        "description": "Provide instructions on the specifics of how you would like the code to be completed.",
+        "prompt": "Based on the instructions, create code for the file OR FILES suggested by the following instructions. Be sure to provide detailed information if necessary. Use advanced coding.",
+        "message_text": " ----- **Active Command:** Programmer ----- ", 
     }
     # Add more as needed
 }
