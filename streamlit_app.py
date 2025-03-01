@@ -462,7 +462,20 @@ PREBUILT_COMMANDS = {
     "/weeklyhgflashcards": {
         "title": "/weeklyhgflashcards",
         "description": "Paste a list of human geography terms.",
-        "prompt": "With the following AP Human Geography vocabulary words, please created a list formatted as such: (IMPORTANT: Everywhere after, where it says Term, replace that with the term listed, don't explicitly write Term: and Definition: - make sure that you don't write out 'Definition' you actually put the definition of the term before) First, the line begins with Term: (in bold) Definition. The next two lines use a bullleted list format. The first bullet is In Other Words: (in bold) then a rephrasing/restatement/another way to say the term. The next bullet point is Examples: (in bold) and then comma-separated list of 2-5 examples of that term. For the next terms, go to the next line without any bullets for the definition once more.",
+        "prompt": """With the following AP Human Geography vocabulary words, create a list formatted as follows:
+
+        First, look up each term in the provided flashcard database. If the term exists, use that definition. If not, create your own definition and mark it with *(Not in flashcards list)* in bold.
+        
+        For each term:
+        1. Start with the term in bold
+        2. Immediately follow with the definition (from the database if available, or your own if not)
+        3. Add two bullet points:
+           • First bullet: **In Other Words:** followed by a different rephrasing/restatement of the term (not the same as the definition)
+           • Second bullet: **Examples:** followed by a comma-separated list of 2-5 examples of that term
+        4. Move to the next term on a new line
+        
+        The terms to define are:""",
+        
         "message_text": " ----- **Active Command:** Weekly Human Geography Flashcards ----- ", 
     },
     "/cornellformat": {
@@ -539,6 +552,19 @@ PREBUILT_COMMANDS = {
     }
     # Add more as needed
 }
+
+def load_flashcard_definitions():
+    try:
+        with open("hug_fc.txt", "r") as f:
+            flashcard_dict = {}
+            for line in f:
+                if "|" in line:
+                    term, definition = line.split("|", 1)
+                    flashcard_dict[term.strip().lower()] = definition.strip()
+            return flashcard_dict
+    except Exception as e:
+        st.error(f"Error loading flashcard definitions: {str(e)}")
+        return {}
 
 def extract_pdf_text(file):
     try:
@@ -1111,6 +1137,48 @@ def main():
             except Exception as e:
                 st.error(f"An error occurred while processing the audio: {str(e)}")
                 st.warning("Please try again or type your question instead.")
+
+    # In the main function, add this before handling chat input:
+    if 'flashcard_definitions' not in st.session_state:
+        st.session_state.flashcard_definitions = load_flashcard_definitions()
+    
+    # Then modify the chat input handling to pass the flashcard definitions:
+    if prompt:
+        final_prompt = prompt
+        command_suffix = ""
+        command_message = ""
+        
+        if hasattr(st.session_state, 'current_command') and st.session_state.current_command:
+            command = st.session_state.current_command
+            
+            # Check if it's a built-in command or custom command
+            if command in PREBUILT_COMMANDS:
+                command_prompt = PREBUILT_COMMANDS[command]["prompt"]
+                command_suffix = f" **[{command}]**"
+                command_message = PREBUILT_COMMANDS[command].get("message_text", "")
+                
+                # Special handling for flashcards command
+                if command == "/weeklyhgflashcards":
+                    # Add flashcard definitions context
+                    terms = [term.strip() for term in prompt.split("\n") if term.strip()]
+                    flashcard_context = []
+                    
+                    for term in terms:
+                        term_lower = term.lower()
+                        if term_lower in st.session_state.flashcard_definitions:
+                            flashcard_context.append(f"{term} | {st.session_state.flashcard_definitions[term_lower]}")
+                        else:
+                            flashcard_context.append(f"{term} | NOT_FOUND")
+                    
+                    if flashcard_context:
+                        command_prompt += "\n\nAvailable flashcard definitions:\n" + "\n".join(flashcard_context)
+            elif command in st.session_state.custom_commands:
+                command_prompt = st.session_state.custom_commands[command]["prompt"]
+                command_suffix = f" **[{command}]**"
+                command_message = st.session_state.custom_commands[command].get("message_text", "")
+            
+            final_prompt = f"{command_prompt}\n{prompt}"
+            st.session_state.current_command = None
 
     # Chat input handling
     prompt = st.chat_input("What can I help you with?")
