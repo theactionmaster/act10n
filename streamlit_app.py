@@ -103,7 +103,7 @@ def check_password():
         if st.session_state["password"] == st.secrets["PASSWORD"]:
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # Don't store the password
-        else if st.session_state["password] == st.secrets["OTHERPW]:
+        elif st.session_state["password] == st.secrets["OTHERPW]:
             st.session_state["password_correct"] = True
             del st.session_state["password"] # Don't store the password
         else:
