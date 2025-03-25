@@ -911,7 +911,7 @@ def main():
 
     # Sign Out Button and Settings
     with st.sidebar:
-        with st.expander("**Settings & Preferences**", expanded=False):
+        with st.expander("**Settings & Preferences (doesn't work)**", expanded=False):
             # Font selection
             available_fonts = [
                 "Montserrat", "Orbitron", "DM Sans", "Calibri", 
