@@ -943,7 +943,7 @@ def main():
                 key="high_contrast",
                 help="Increases color contrast for better visibility"
             )help="Reduces animations and transitions"
-            )
+            
             
             # Apply settings button
             if st.button("Apply Settings", key="apply_accessibility"):
