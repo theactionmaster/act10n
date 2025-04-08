@@ -942,7 +942,7 @@ def main():
                 value=st.session_state.accessibility.get('high_contrast', False),
                 key="high_contrast",
                 help="Increases color contrast for better visibility"
-            )help="Reduces animations and transitions"
+            )
             
             
             # Apply settings button
