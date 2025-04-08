@@ -656,8 +656,7 @@ def apply_accessibility_settings():
                     accDiv.innerText = savedPrefs;
                 } else {
                     accDiv.innerText = JSON.stringify({
-                        high_contrast: false,
-                        reduce_motion: false
+                        high_contrast: false
                     });
                 }
                 setTimeout(() => {
@@ -681,19 +680,16 @@ def apply_accessibility_settings():
             except:
                 # Default preferences if loading fails
                 st.session_state.accessibility = {
-                    "high_contrast": False,
-                    "reduce_motion": False
+                    "high_contrast": False
                 }
         else:
             # Default preferences
             st.session_state.accessibility = {
-                "high_contrast": False,
-                "reduce_motion": False
+                "high_contrast": False
             }
     
     # Apply accessibility settings
     high_contrast = st.session_state.accessibility.get('high_contrast', False)
-    reduce_motion = st.session_state.accessibility.get('reduce_motion', False)
     
     css = []
     
@@ -711,14 +707,6 @@ def apply_accessibility_settings():
             color: white !important;
             background-color: #333 !important;
             border: 2px solid yellow !important;
-        }
-        """)
-    
-    if reduce_motion:
-        css.append("""
-        * {
-            animation: none !important;
-            transition: none !important;
         }
         """)
     
@@ -911,7 +899,7 @@ def main():
 
     # Sign Out Button and Settings
     with st.sidebar:
-        with st.expander("**Settings & Preferences (doesn't work)**", expanded=False):
+        with st.expander("**Settings & Preferences**", expanded=False):
             # Font selection
             available_fonts = [
                 "Montserrat", "Orbitron", "DM Sans", "Calibri", 
@@ -930,13 +918,6 @@ def main():
                 key="font_family_select"
             )
             
-            text_size = st.selectbox(
-                "Text Size",
-                ["Small", "Medium", "Large", "X-Large"],
-                index=["small", "medium", "large", "x-large"].index(st.session_state.font_preferences.get("text_size", "medium")),
-                key="text_size_select"
-            )
-            
             # Font selection and application button
             if st.button("Apply Font", key="apply_font"):
                 st.session_state.font_preferences = {
@@ -952,8 +933,7 @@ def main():
             # Initialize accessibility state if needed
             if 'accessibility' not in st.session_state:
                 st.session_state.accessibility = {
-                    'high_contrast': False,
-                    'reduce_motion': False
+                    'high_contrast': False
                 }
             
             # High contrast mode
@@ -962,21 +942,13 @@ def main():
                 value=st.session_state.accessibility.get('high_contrast', False),
                 key="high_contrast",
                 help="Increases color contrast for better visibility"
-            )
-            
-            # Reduce motion
-            reduce_motion = st.checkbox(
-                "Reduce Motion", 
-                value=st.session_state.accessibility.get('reduce_motion', False),
-                key="reduce_motion",
-                help="Reduces animations and transitions"
+            )help="Reduces animations and transitions"
             )
             
             # Apply settings button
             if st.button("Apply Settings", key="apply_accessibility"):
                 st.session_state.accessibility = {
-                    'high_contrast': high_contrast,
-                    'reduce_motion': reduce_motion
+                    'high_contrast': high_contrast
                 }
                 save_accessibility_preferences()
                 st.rerun()
