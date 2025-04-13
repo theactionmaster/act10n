@@ -94,17 +94,19 @@ def clear_persistent_login():
     )
     st.session_state.persistent_login = False
 
+if 'access_level' not in st.session_state:
+    st.session_state['access_level'] = None
+
 def check_password(): 
     """Returns a tuple: (True/False, access_level) indicating password correctness and access level.""" 
 
-    # Initialize and apply font preferences first 
-    initialize_font_preferences() 
-    apply_font_preferences() 
-    apply_accessibility_settings() 
+    # Ensure 'access_level' is initialized
+    if 'access_level' not in st.session_state:
+        st.session_state['access_level'] = None
 
     def password_entered(): 
         """Checks whether a password entered by the user is correct and sets the access level.""" 
-        password = st.session_state["password"] 
+        password = st.session_state.get("password", "")  # Use .get() to avoid KeyError
         if password == st.secrets["PASSWORD"] or password == st.secrets["OTHERPW"] or password == st.secrets["BASE4PW"]: 
             st.session_state["password_correct"] = True 
             st.session_state["access_level"] = "Platinum" 
@@ -124,7 +126,7 @@ def check_password():
     # Return True if the password is validated, along with the access level 
     if "password_correct" in st.session_state: 
         if st.session_state["password_correct"]: 
-            return True, st.session_state["access_level"] 
+            return True, st.session_state.get("access_level", None)
 
     # Show input for password 
     st.title("💬 Mainframe AI") 
