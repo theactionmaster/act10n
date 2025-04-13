@@ -94,47 +94,53 @@ def clear_persistent_login():
     )
     st.session_state.persistent_login = False
 
-def check_password():
-    """Returns `True` if the user had the correct password."""
-    
-    # Initialize and apply font preferences first
-    initialize_font_preferences()
-    apply_font_preferences()
-    apply_accessibility_settings()
-    
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == st.secrets["PASSWORD"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store the password
-        elif st.session_state["password"] == st.secrets["OTHERPW"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"] # Don't store the password
-        else:
-            st.session_state["password_correct"] = False
+def check_password(): 
+    """Returns a tuple: (True/False, access_level) indicating password correctness and access level.""" 
 
-    # Return True if the password is validated
-    if st.session_state.get("password_correct", False):
-        return True
+    # Initialize and apply font preferences first 
+    initialize_font_preferences() 
+    apply_font_preferences() 
+    apply_accessibility_settings() 
 
-    # Show input for password
-    st.title("💬 Mainframe AI")
-    
-    st.markdown("### Please enter the password to access Mainframe AI")
-    
-    # Create password input field
-    st.text_input(
-        "Password", 
-        type="password", 
-        on_change=password_entered, 
-        key="password"
-    )
-    
-    if "password_correct" in st.session_state:
-        if not st.session_state["password_correct"]:
-            st.error("😕 Incorrect password. Please try again.")
-    
-    return False
+    def password_entered(): 
+        """Checks whether a password entered by the user is correct and sets the access level.""" 
+        password = st.session_state["password"] 
+        if password == st.secrets["PASSWORD"] or password == st.secrets["OTHERPW"] or password == st.secrets["BASE4PW"]: 
+            st.session_state["password_correct"] = True 
+            st.session_state["access_level"] = "Platinum" 
+        elif password == st.secrets["BASE3PW"]: 
+            st.session_state["password_correct"] = True 
+            st.session_state["access_level"] = "Gold" 
+        elif password == st.secrets["BASE2PW"]: 
+            st.session_state["password_correct"] = True 
+            st.session_state["access_level"] = "Silver" 
+        elif password == st.secrets["BASE1PW"]: 
+            st.session_state["password_correct"] = True 
+            st.session_state["access_level"] = "Bronze" 
+        else: 
+            st.session_state["password_correct"] = False 
+            st.session_state["access_level"] = None  # Reset access level on failure 
+
+    # Return True if the password is validated, along with the access level 
+    if "password_correct" in st.session_state: 
+        if st.session_state["password_correct"]: 
+            return True, st.session_state["access_level"] 
+
+    # Show input for password 
+    st.title("💬 Mainframe AI") 
+    st.markdown("### Please enter the password to access Mainframe AI") 
+    st.text_input( 
+        "Password",  
+        type="password",  
+        on_change=password_entered,  
+        key="password" 
+    ) 
+
+    if "password_correct" in st.session_state: 
+        if not st.session_state["password_correct"]: 
+            st.error("Incorrect password! Please try again.") 
+
+    return False, None
 
 def initialize_font_preferences():
     if 'font_preferences' not in st.session_state:
@@ -900,164 +906,165 @@ def prepare_chat_input(prompt, files):
     input_parts.append(prompt)
     return input_parts
 
-def main():
-    # Check password first
-    if not check_password():
-        return
+def main(): 
+    # Check password and get access level 
+    password_correct, access_level = check_password() 
+    if not password_correct: 
+        return 
     
     initialize_session_state()
 
-    st.title("💬 Mainframe AI")
+    # Set the title based on access level 
+    title_suffix = f" ({access_level} Level)" if access_level else "" 
+    st.title(f"💬 Mainframe AI{title_suffix}") 
 
     # Sign Out Button and Settings
     with st.sidebar:
 
         st.link_button("Go to **Mainframe Shop**", "https://mainframeshop.streamlit.app")
         
-        with st.expander("**Settings & Preferences**", expanded=False):
-            # Font selection
-            available_fonts = [
-                "Montserrat", "Orbitron", "DM Sans", "Calibri", 
-                "Arial", "Times New Roman", "Roboto", "Open Sans",
-                "Lato", "Poppins", "Ubuntu", "Playfair Display"
-            ]
-            
-            # Font search/filter
-            font_search = st.text_input("Search Fonts", key="font_search")
-            filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
-            
-            font_family = st.selectbox(
-                "Font Family",
-                filtered_fonts,
-                index=filtered_fonts.index(st.session_state.font_preferences["font_family"]) if st.session_state.font_preferences["font_family"] in filtered_fonts else 0,
-                key="font_family_select"
-            )
-            
-            # Font selection and application button
-            if st.button("Apply Font", key="apply_font"):
-                st.session_state.font_preferences = {
-                    "font_family": font_family
-                }
-                save_font_preferences()
-                st.rerun()
-            
-            # Add accessibility options directly (not in another expander)
-            st.markdown("---")
-            st.markdown("**Accessibility Options**")
-            
-            # Initialize accessibility state if needed
-            if 'accessibility' not in st.session_state:
-                st.session_state.accessibility = {
-                    'high_contrast': False
-                }
-            
-            # High contrast mode
-            high_contrast = st.checkbox(
-                "High Contrast Mode", 
-                value=st.session_state.accessibility.get('high_contrast', False),
-                key="high_contrast",
-                help="Increases color contrast for better visibility"
-            )
-            
-            
-            # Apply settings button
-            if st.button("Apply Settings", key="apply_accessibility"):
-                st.session_state.accessibility = {
-                    'high_contrast': high_contrast
-                }
-                save_accessibility_preferences()
-                st.rerun()
-
-    # File Upload Section
-    with st.sidebar:
-        with st.expander("**File Upload**", expanded=False):
-            st.markdown("**ALWAYS** upload one file at a time.")
-            clipboard_file = handle_clipboard_data()
-            if clipboard_file:
-                st.session_state.uploaded_files.append(clipboard_file)
-            uploaded_files = st.file_uploader(
-                "Upload files to analyze", 
-                type=[
-                    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
-                    'mp4', 'avi', 'mov', 'mkv', 'webm',
-                    'mp3', 'wav', 'ogg', 'm4a',
-                    'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
-                ],
-                accept_multiple_files=True
-            )
-
-            if uploaded_files:
-                oversized_files = []
-                valid_files = []
-                
-                for file in uploaded_files:
-                    if file.size > 20 * 1024 * 1024:  # 20MB limit
-                        oversized_files.append(file.name)
-                    else:
-                        valid_files.append(file)
-                
-                if oversized_files:
-                    st.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
-                
-                st.session_state.uploaded_files = valid_files
-
-    # Camera Input Section
-    with st.sidebar:
-        with st.expander("**Camera Input**", expanded=False):
-            camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
-            
-            if camera_enabled != st.session_state.camera_enabled:
-                st.session_state.camera_enabled = camera_enabled
-                st.session_state.camera_image = None
-                
-            if st.session_state.camera_enabled:
-                camera_image = st.camera_input("Take a picture")
-                if camera_image is not None:
-                    st.session_state.camera_image = camera_image
-                    st.image(camera_image, caption="Captured Image")
-                    st.success("Image captured! You can now ask about the image.")
-
-    # Voice Input Section
-    with st.sidebar:
-        with st.expander("**Voice Input**", expanded=False):
-            audio_input = st.audio_input("Record your question")
-
-    # Prebuilt Commands Section
-    with st.sidebar:
-        with st.expander("**Prebuilt Commands**", expanded=False):
-            if 'current_command' not in st.session_state:
-                st.session_state.current_command = None
-                
-            st.write("**Active:**", st.session_state.current_command if st.session_state.current_command else "None")
-            
-            for cmd, info in PREBUILT_COMMANDS.items():
-                col1, col2 = st.columns([4, 1])
-                
-                with col1:
-                    button_active = st.session_state.current_command == cmd
-                    if st.button(
-                        info["title"],
-                        key=f"cmd_{cmd}",
-                        type="primary" if button_active else "secondary"
-                    ):
-                        if st.session_state.current_command == cmd:
-                            st.session_state.current_command = None
-                        else:
-                            st.session_state.current_command = cmd
-                        st.rerun()
-                
-                with col2:
-                    help_key = f"help_{cmd}"
-                    if help_key not in st.session_state:
-                        st.session_state[help_key] = False
+        # Conditional display of sidebar elements 
+        if access_level: #Only show if password is correct 
+            if access_level != "Bronze": 
+                with st.expander("**Settings & Preferences**", expanded=False): 
+                    # Font selection
+                    available_fonts = [
+                        "Montserrat", "Orbitron", "DM Sans", "Calibri", 
+                        "Arial", "Times New Roman", "Roboto", "Open Sans",
+                        "Lato", "Poppins", "Ubuntu", "Playfair Display"
+                    ]
                     
-                    button_text = "×" if st.session_state[help_key] else "?"
-                    if st.button(button_text, key=f"help_btn_{cmd}"):
-                        st.session_state[help_key] = not st.session_state[help_key]
+                    # Font search/filter
+                    font_search = st.text_input("Search Fonts", key="font_search")
+                    filtered_fonts = [f for f in available_fonts if font_search.lower() in f.lower()] if font_search else available_fonts
+                    
+                    font_family = st.selectbox(
+                        "Font Family",
+                        filtered_fonts,
+                        index=filtered_fonts.index(st.session_state.font_preferences["font_family"]) if st.session_state.font_preferences["font_family"] in filtered_fonts else 0,
+                        key="font_family_select"
+                    )
+                    
+                    # Font selection and application button
+                    if st.button("Apply Font", key="apply_font"):
+                        st.session_state.font_preferences = {
+                            "font_family": font_family
+                        }
+                        save_font_preferences()
                         st.rerun()
-                
-                if st.session_state[help_key]:
-                    st.info(info["description"])
+                    
+                    # Add accessibility options directly (not in another expander)
+                    st.markdown("---")
+                    st.markdown("**Accessibility Options**")
+                    
+                    # Initialize accessibility state if needed
+                    if 'accessibility' not in st.session_state:
+                        st.session_state.accessibility = {
+                            'high_contrast': False
+                        }
+                    
+                    # High contrast mode
+                    high_contrast = st.checkbox(
+                        "High Contrast Mode", 
+                        value=st.session_state.accessibility.get('high_contrast', False),
+                        key="high_contrast",
+                        help="Increases color contrast for better visibility"
+                    )
+                    
+                    
+                    # Apply settings button
+                    if st.button("Apply Settings", key="apply_accessibility"):
+                        st.session_state.accessibility = {
+                            'high_contrast': high_contrast
+                        }
+                        save_accessibility_preferences()
+                        st.rerun()
+
+            if access_level in ["Silver", "Gold", "Platinum"]: 
+                with st.expander("**Camera Input**", expanded=False): 
+                    camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
+                    
+                    if camera_enabled != st.session_state.camera_enabled:
+                        st.session_state.camera_enabled = camera_enabled
+                        st.session_state.camera_image = None
+                        
+                    if st.session_state.camera_enabled:
+                        camera_image = st.camera_input("Take a picture")
+                        if camera_image is not None:
+                            st.session_state.camera_image = camera_image
+                            st.image(camera_image, caption="Captured Image")
+                            st.success("Image captured! You can now ask about the image.")
+
+                with st.expander("**Voice Input**", expanded=False): 
+                    audio_input = st.audio_input("Record your question")
+
+            if access_level in ["Gold", "Platinum"]: 
+                with st.expander("**Prebuilt Commands**", expanded=False): 
+                    if 'current_command' not in st.session_state:
+                        st.session_state.current_command = None
+                        
+                    st.write("**Active:**", st.session_state.current_command if st.session_state.current_command else "None")
+                    
+                    for cmd, info in PREBUILT_COMMANDS.items():
+                        col1, col2 = st.columns([4, 1])
+                        
+                        with col1:
+                            button_active = st.session_state.current_command == cmd
+                            if st.button(
+                                info["title"],
+                                key=f"cmd_{cmd}",
+                                type="primary" if button_active else "secondary"
+                            ):
+                                if st.session_state.current_command == cmd:
+                                    st.session_state.current_command = None
+                                else:
+                                    st.session_state.current_command = cmd
+                                st.rerun()
+                        
+                        with col2:
+                            help_key = f"help_{cmd}"
+                            if help_key not in st.session_state:
+                                st.session_state[help_key] = False
+                            
+                            button_text = "×" if st.session_state[help_key] else "?"
+                            if st.button(button_text, key=f"help_btn_{cmd}"):
+                                st.session_state[help_key] = not st.session_state[help_key]
+                                st.rerun()
+                        
+                        if st.session_state[help_key]:
+                            st.info(info["description"])
+
+            if access_level == "Platinum": 
+                with st.expander("**File Upload**", expanded=False): 
+                    st.markdown("**ALWAYS** upload one file at a time.")
+                    clipboard_file = handle_clipboard_data()
+                    if clipboard_file:
+                        st.session_state.uploaded_files.append(clipboard_file)
+                    uploaded_files = st.file_uploader(
+                        "Upload files to analyze", 
+                        type=[
+                            'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
+                            'mp4', 'avi', 'mov', 'mkv', 'webm',
+                            'mp3', 'wav', 'ogg', 'm4a',
+                            'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
+                        ],
+                        accept_multiple_files=True
+                    )
+        
+                    if uploaded_files:
+                        oversized_files = []
+                        valid_files = []
+                        
+                        for file in uploaded_files:
+                            if file.size > 20 * 1024 * 1024:  # 20MB limit
+                                oversized_files.append(file.name)
+                            else:
+                                valid_files.append(file)
+                        
+                        if oversized_files:
+                            st.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
+                        
+                        st.session_state.uploaded_files = valid_files
 
     # Display messages
     for message in st.session_state.messages:
