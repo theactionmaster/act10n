@@ -900,29 +900,7 @@ def main():
     # Sign Out Button and Settings
     with st.sidebar:
 
-        # Mainframe Shop Button 
-        st.markdown(""" 
-            <a href="https://mainframeshop.streamlit.app" target="_blank" class="mainframe-shop-button"> 
-                Enter **Mainframe Shop** 
-            </a> 
-            <style> 
-                .mainframe-shop-button { 
-                    display: block; 
-                    width: 200px; 
-                    padding: 10px; 
-                    text-align: center; 
-                    background-color: #007bff; /* Example color */ 
-                    color: white; 
-                    text-decoration: none; 
-                    border-radius: 5px; 
-                    margin-top: 10px; 
-                    font-family: 'Montserrat', sans-serif !important; 
-                } 
-                .mainframe-shop-button:hover { 
-                    background-color: #0069d9; 
-                } 
-            </style> 
-        """, unsafe_allow_html=True) 
+        st.link_button("Go to **Mainframe Shop**", "https://mainframeshop.streamlit.app")
         
         with st.expander("**Settings & Preferences**", expanded=False):
             # Font selection
