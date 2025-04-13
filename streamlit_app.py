@@ -1073,6 +1073,12 @@ def main():
         with st.chat_message(message["role"]):
             st.markdown(message["content"], unsafe_allow_html=True)
 
+    # Handle audio input safely
+    audio_input = None  # Initialize the variable to avoid UnboundLocalError
+    
+    if 'audio_input' in st.session_state:
+        audio_input = st.session_state.audio_input
+    
     # Handle audio input
     if audio_input is not None:
         audio_hash = get_audio_hash(audio_input)
