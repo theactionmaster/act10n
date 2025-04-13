@@ -547,26 +547,34 @@ PREBUILT_COMMANDS = {
     # Add more as needed
 }
 
-def extract_pdf_text(file):
-    try:
-        # Try using PyMuPDF (fitz) first for better PDF extraction
-        try:
-            pdf_document = fitz.open(stream=file.read(), filetype="pdf")
-            text = ""
-            for page_num in range(len(pdf_document)):
-                page = pdf_document[page_num]
-                text += page.get_text()
-            return text
-        except:
-            # Fall back to PyPDF2 if PyMuPDF fails
-            file.seek(0)  # Reset file pointer
-            pdf = PdfReader(file)
-            text = ""
-            for page in pdf.pages:
-                text += page.extract_text()
-            return text
-    except Exception as e:
-        return f"Error extracting PDF text: {str(e)}"
+def extract_pdf_text(file): 
+    try: 
+        if fitz: # Check if fitz is available 
+            try: 
+                pdf_document = fitz.open(stream=file.read(), filetype="pdf") 
+                text = "" 
+                for page_num in range(len(pdf_document)): 
+                    page = pdf_document[page_num] 
+                    text += page.get_text() 
+                return text 
+            except Exception as e: 
+                # Fall back to PyPDF2 if PyMuPDF fails 
+                file.seek(0)  # Reset file pointer 
+                pdf = PdfReader(file) 
+                text = "" 
+                for page in pdf.pages: 
+                    text += page.extract_text() 
+                return text 
+        else: 
+            # Handle case where PyMuPDF is not installed 
+            file.seek(0) 
+            pdf = PdfReader(file) 
+            text = "" 
+            for page in pdf.pages: 
+                text += page.extract_text() 
+            return text 
+    except Exception as e: 
+        return f"Error extracting PDF text: {str(e)}" 
 
 def extract_docx_text(file):
     try:
