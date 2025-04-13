@@ -17,6 +17,10 @@ import xml.etree.ElementTree as ET
 from io import BytesIO
 import base64
 from datetime import datetime, timedelta
+try: 
+    import fitz  # PyMuPDF 
+except ImportError: 
+    fitz = None 
 
 # Check for password in session state and persistent login
 def get_persistent_login():
