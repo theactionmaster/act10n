@@ -1058,13 +1058,13 @@ def main():
                         valid_files = []
                         
                         for file in uploaded_files:
-                            if file.size > 20 * 1024 * 1024:  # 20MB limit
+                            if file.size > 200 * 1024 * 1024:  # 200MB limit
                                 oversized_files.append(file.name)
                             else:
                                 valid_files.append(file)
                         
                         if oversized_files:
-                            st.warning(f"Files exceeding 20MB limit: {', '.join(oversized_files)}")
+                            st.warning(f"Files exceeding 200MB limit: {', '.join(oversized_files)}")
                         
                         st.session_state.uploaded_files = valid_files
 
