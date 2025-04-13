@@ -988,6 +988,38 @@ def main():
                         save_accessibility_preferences()
                         st.rerun()
 
+            if access_level == "Platinum": 
+                with st.expander("**File Upload**", expanded=False): 
+                    st.markdown("**ALWAYS** upload one file at a time.")
+                    clipboard_file = handle_clipboard_data()
+                    if clipboard_file:
+                        st.session_state.uploaded_files.append(clipboard_file)
+                    uploaded_files = st.file_uploader(
+                        "Upload files to analyze", 
+                        type=[
+                            'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
+                            'mp4', 'avi', 'mov', 'mkv', 'webm',
+                            'mp3', 'wav', 'ogg', 'm4a',
+                            'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
+                        ],
+                        accept_multiple_files=True
+                    )
+        
+                    if uploaded_files:
+                        oversized_files = []
+                        valid_files = []
+                        
+                        for file in uploaded_files:
+                            if file.size > 100 * 1024 * 1024:  # 100MB limit
+                                oversized_files.append(file.name)
+                            else:
+                                valid_files.append(file)
+                        
+                        if oversized_files:
+                            st.warning(f"Files exceeding 100MB limit: {', '.join(oversized_files)}")
+                        
+                        st.session_state.uploaded_files = valid_files
+
             if access_level in ["Silver", "Gold", "Platinum"]: 
                 with st.expander("**Camera Input**", expanded=False): 
                     camera_enabled = st.checkbox("Enable camera", value=st.session_state.camera_enabled)
@@ -1041,38 +1073,6 @@ def main():
                         
                         if st.session_state[help_key]:
                             st.info(info["description"])
-
-            if access_level == "Platinum": 
-                with st.expander("**File Upload**", expanded=False): 
-                    st.markdown("**ALWAYS** upload one file at a time.")
-                    clipboard_file = handle_clipboard_data()
-                    if clipboard_file:
-                        st.session_state.uploaded_files.append(clipboard_file)
-                    uploaded_files = st.file_uploader(
-                        "Upload files to analyze", 
-                        type=[
-                            'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff',
-                            'mp4', 'avi', 'mov', 'mkv', 'webm',
-                            'mp3', 'wav', 'ogg', 'm4a',
-                            'pdf', 'doc', 'docx', 'txt', 'csv', 'xlsx', 'json', 'xml'
-                        ],
-                        accept_multiple_files=True
-                    )
-        
-                    if uploaded_files:
-                        oversized_files = []
-                        valid_files = []
-                        
-                        for file in uploaded_files:
-                            if file.size > 100 * 1024 * 1024:  # 100MB limit
-                                oversized_files.append(file.name)
-                            else:
-                                valid_files.append(file)
-                        
-                        if oversized_files:
-                            st.warning(f"Files exceeding 100MB limit: {', '.join(oversized_files)}")
-                        
-                        st.session_state.uploaded_files = valid_files
 
     # Display messages
     for message in st.session_state.messages:
