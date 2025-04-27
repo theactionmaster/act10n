@@ -107,8 +107,6 @@ def check_password():
     def password_entered(): 
         """Checks whether a password entered by the user is correct and sets the access level.""" 
         password = st.session_state.get("password", "")  # Use .get() to avoid KeyError
-        print(f"Secret Password: {st.secrets['MMPW']}")  # Added print statement 
-        print(f"User Password: {password}")             # Added print statement 
         if password == st.secrets["PASSWORD"] or password == st.secrets["OTHERPW"] or password == st.secrets["BASE4PW"] or password == st.secrets["MMPW"]: 
             st.session_state["password_correct"] = True 
             st.session_state["access_level"] = "Platinum" 
