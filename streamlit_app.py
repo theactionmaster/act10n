@@ -922,8 +922,6 @@ def main():
 
     # Sign Out Button and Settings
     with st.sidebar:
-
-        st.link_button("Go to **Mainframe Shop**", "https://mainframeshop.streamlit.app")
         
         # Conditional display of sidebar elements 
         if access_level: #Only show if password is correct 
