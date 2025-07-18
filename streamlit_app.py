@@ -636,14 +636,17 @@ def handle_clipboard_data():
         return
         
     clipboard_data = st.session_state.get('clipboard_data')
-    if clipboard_data:
-        try:
-            if clipboard_data['format'] == 'image':
-                img_data = base64.b64decode(clipboard_data['data'].split(',')[1])
-                file = BytesIO(img_data)
-                file.name = f'pasted_image_{int(time.time())}.png'
-                return file
-            elif clipboard_data['format'] == 'text':
+    if clipboard_data: 
+        try: 
+            if clipboard_data['format'] == 'image': 
+                img_data = base64.b64decode(clipboard_data['data'].split(',')[1]) 
+                file = BytesIO(img_data) 
+                file.name = f'pasted_image_{int(time.time())}.png' 
+                # Directly add the pasted file to the uploaded_files list 
+                st.session_state.uploaded_files.append(file) 
+                # Optionally, trigger a rerun to immediately show the image in the sidebar 
+                st.experimental_rerun() 
+            elif clipboard_data['format'] == 'text': 
                 file = BytesIO(clipboard_data['data'].encode())
                 file.name = f'pasted_text_{int(time.time())}.txt'
                 return file
@@ -1147,6 +1150,7 @@ def main():
                     'mime_type': detect_file_type(file),
                     'data': file.getvalue()
                 })
+                show_file_preview(file)
         
         if st.session_state.camera_image:
             input_parts.append({
