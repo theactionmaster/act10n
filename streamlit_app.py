@@ -631,28 +631,31 @@ def process_response(text):
     return text.strip()
 
 # Add this function to handle clipboard data
-def handle_clipboard_data():
-    if 'clipboard_data' not in st.session_state:
-        return
-        
-    clipboard_data = st.session_state.get('clipboard_data')
+def handle_clipboard_data(): 
+    if 'clipboard_data' not in st.session_state: 
+        return None 
+
+    clipboard_data = st.session_state.get('clipboard_data') 
     if clipboard_data: 
         try: 
             if clipboard_data['format'] == 'image': 
                 img_data = base64.b64decode(clipboard_data['data'].split(',')[1]) 
                 file = BytesIO(img_data) 
                 file.name = f'pasted_image_{int(time.time())}.png' 
-                # Directly add the pasted file to the uploaded_files list 
+                #Crucial change: Add the pasted file to uploaded_files 
+                if 'uploaded_files' not in st.session_state: 
+                    st.session_state.uploaded_files = [] 
                 st.session_state.uploaded_files.append(file) 
-                # Optionally, trigger a rerun to immediately show the image in the sidebar 
-                st.experimental_rerun() 
+                return file  # Return the file object 
             elif clipboard_data['format'] == 'text': 
-                file = BytesIO(clipboard_data['data'].encode())
-                file.name = f'pasted_text_{int(time.time())}.txt'
-                return file
-        finally:
-            st.session_state.clipboard_data = None
-    return None
+                file = BytesIO(clipboard_data['data'].encode()) 
+                file.name = f'pasted_text_{int(time.time())}.txt' 
+                return file 
+        except Exception as e: 
+            st.error(f"Error processing clipboard data: {e}") 
+        finally: 
+            st.session_state.clipboard_data = None 
+    return None 
 
 def save_accessibility_preferences():
     prefs_json = json.dumps(st.session_state.accessibility)
@@ -1145,6 +1148,7 @@ def main():
         input_parts = []
         
         if st.session_state.uploaded_files:
+            st.rerun() 
             for file in st.session_state.uploaded_files:
                 input_parts.append({
                     'mime_type': detect_file_type(file),
